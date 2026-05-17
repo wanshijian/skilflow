@@ -6,13 +6,7 @@
 
   &__content {
     width: 100%;
-    max-width: 1280px;
-    margin: 0 auto;
     padding: 18px 20px 92px;
-
-    @media (min-width: 1440px) {
-      max-width: 1400px;
-    }
   }
 }
 
@@ -20,7 +14,15 @@
 @media (min-width: 768px) {
   .layout {
     &__content {
-      padding: 48px 32px 64px;
+      padding: 48px 40px 64px;
+    }
+  }
+}
+
+@media (min-width: 1600px) {
+  .layout {
+    &__content {
+      padding: 56px 64px 64px;
     }
   }
 }

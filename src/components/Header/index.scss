@@ -12,14 +12,8 @@
     align-items: center;
     justify-content: space-between;
     width: 100%;
-    max-width: 1280px;
     height: 64px;
-    margin: 0 auto;
     padding: 0 24px;
-
-    @media (min-width: 1440px) {
-      max-width: 1400px;
-    }
   }
 
   &__logo {
@@ -74,6 +68,14 @@
 
     &__nav {
       display: none;
+    }
+  }
+}
+
+@media (min-width: 1600px) {
+  .site-header {
+    &__inner {
+      padding: 0 64px;
     }
   }
 }
