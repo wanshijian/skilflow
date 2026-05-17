@@ -3,12 +3,13 @@ import { useEffect, useState } from 'react'
 import Taro, { useRouter } from '@tarojs/taro'
 import Layout from '../../components/Layout'
 import { toolsApi, quotaApi } from '../../utils/api'
-import { devMode } from '../../utils/devMode'
+import { useAuthStore } from '../../stores/authStore'
 import type { Tool } from '../../stores/toolStore'
 import './detail.scss'
 
 export default function ToolDetailPage() {
   const router = useRouter(); const { id } = router.params
+  const { user } = useAuthStore()
   const [tool, setTool] = useState<Tool | null>(null)
   const [loading, setLoading] = useState(true)
   const [downloading, setDownloading] = useState(false)
@@ -23,16 +24,16 @@ export default function ToolDetailPage() {
     if (!tool) return
     setDownloading(true)
     Taro.setClipboardData({ data: typeof window !== 'undefined' ? window.location.href : '' })
-    const user = devMode.getUser()
-    await quotaApi.shareUnlock(user.id, tool.id)
+    const userId = user?.id || ''
+    await quotaApi.shareUnlock(userId, tool.id)
     downloadTool(tool)
   }
 
   async function handlePaidDownload() {
     if (!tool) return
     setDownloading(true)
-    const user = devMode.getUser()
-    await quotaApi.consumeFree(user.id, tool.id)
+    const userId = user?.id || ''
+    await quotaApi.consumeFree(userId, tool.id)
     downloadTool(tool)
   }
 

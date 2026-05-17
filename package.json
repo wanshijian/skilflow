@@ -34,6 +34,7 @@
     "@tarojs/runtime": "^3.6.0",
     "@tarojs/shared": "^3.6.0",
     "@tarojs/taro": "^3.6.0",
+    "pg": "^8.20.0",
     "process": "^0.11.10",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
@@ -42,6 +43,7 @@
   "devDependencies": {
     "@babel/core": "^7.24.0",
     "@babel/preset-react": "^7.24.0",
+    "@pmmmwh/react-refresh-webpack-plugin": "^0.5.15",
     "@tarojs/cli": "^3.6.5",
     "@tarojs/webpack5-runner": "^3.6.0",
     "@types/node": "^20.11.0",
@@ -49,9 +51,8 @@
     "@types/webpack-env": "^1.18.0",
     "babel-preset-taro": "^3.6.0",
     "postcss": "^8.4.0",
-    "sass": "^1.75.0",
-    "@pmmmwh/react-refresh-webpack-plugin": "^0.5.15",
     "react-refresh": "^0.14.2",
+    "sass": "^1.75.0",
     "tsx": "^4.16.0",
     "typescript": "^5.4.0",
     "webpack": "5.88.2"

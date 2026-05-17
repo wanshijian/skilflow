@@ -2,40 +2,47 @@ import { View, Text } from '@tarojs/components'
 import { useEffect, useState } from 'react'
 import Taro from '@tarojs/taro'
 import Layout from '../../components/Layout'
-import { useAuthStore } from '../../stores/authStore'
-import { quotaApi, downloadApi, devMode } from '../../utils/api'
+import { useAuth } from '../../hooks/useAuth'
+import { quotaApi, downloadApi } from '../../utils/api'
 import './index.scss'
 
 export default function MyPage() {
-  const { user, isAuthenticated } = useAuthStore()
+  const { user, isAuthenticated, isLoading, signInWithGitHub } = useAuth()
   const [quota, setQuota] = useState<any>(null)
   const [downloads, setDownloads] = useState<any[]>([])
 
   useEffect(() => {
-    if (devMode.isActive) {
-      const devUser = devMode.getUser()
-      useAuthStore.setState({ user: { id: devUser.id, email: devUser.email, nickname: devUser.nickname, role: 'user' }, isAuthenticated: true })
-    }
-    loadData()
-  }, [])
+    if (user) loadData()
+  }, [user])
 
   async function loadData() {
-    const userId = user?.id || devMode.getUser().id
-    const [q, d] = await Promise.all([quotaApi.check(userId), downloadApi.listMine(userId)])
+    const [q, d] = await Promise.all([
+      quotaApi.check(user!.id),
+      downloadApi.listMine(user!.id)
+    ])
     if (q.data) setQuota(q.data)
     if (d.data) setDownloads(d.data)
+  }
+
+  async function handleLogout() {
+    const { supabase } = await import('../../utils/supabase')
+    await supabase.auth.signOut()
+    Taro.showToast({ title: '已退出', icon: 'none' })
   }
 
   return (
     <Layout className="my-page">
       <View className="profile-card">
-        {isAuthenticated ? (
+        {isLoading ? (
+          <Text className="my-subtitle">加载中...</Text>
+        ) : isAuthenticated ? (
           <>
             <View className="my-avatar"><Text className="my-avatar__text">{(user?.nickname || user?.email || 'U')[0].toUpperCase()}</Text></View>
             <View className="profile-card__copy">
               <Text className="my-name">{user?.nickname || user?.email}</Text>
               <Text className="my-subtitle">欢迎回来，继续把想法做成工具。</Text>
             </View>
+            <View className="login-btn" onClick={handleLogout}><Text className="login-btn__text">退出</Text></View>
           </>
         ) : (
           <>
@@ -44,7 +51,7 @@ export default function MyPage() {
               <Text className="my-name">未登录</Text>
               <Text className="my-subtitle">登录后可同步额度和下载记录。</Text>
             </View>
-            <View className="login-btn" onClick={() => Taro.showToast({ title: '登录开发中', icon: 'none' })}><Text className="login-btn__text">登录</Text></View>
+            <View className="login-btn" onClick={signInWithGitHub}><Text className="login-btn__text">GitHub 登录</Text></View>
           </>
         )}
       </View>

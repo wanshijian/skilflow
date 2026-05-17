@@ -51,7 +51,7 @@ export function useAuth() {
   async function signInWithGitHub() {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'github',
-      options: { redirectTo: window.location.origin }
+      options: { redirectTo: window.location.origin + '/skilflow' }
     })
     if (error) {
       Taro.showToast({ title: '登录失败', icon: 'none' })

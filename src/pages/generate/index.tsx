@@ -4,11 +4,12 @@ import Taro from '@tarojs/taro'
 import Layout from '../../components/Layout'
 import { useToolStore } from '../../stores/toolStore'
 import { generateApi, quotaApi } from '../../utils/api'
-import { devMode } from '../../utils/devMode'
+import { useAuthStore } from '../../stores/authStore'
 import './index.scss'
 
 export default function GeneratePage() {
   const { formData, step, setStep, generatedHtml, generatedTitle, setGenerated, retryContext, setRetryContext, quota, setQuota } = useToolStore()
+  const { user } = useAuthStore()
   const [streamedCode, setStreamedCode] = useState('')
   const [phase, setPhase] = useState('')
   const [feedback, setFeedback] = useState('')
@@ -20,7 +21,7 @@ export default function GeneratePage() {
   }, [])
 
   async function checkAndGenerate() {
-    const user = devMode.getUser()
+    if (!user?.id) return
     const { data: q } = await quotaApi.check(user.id)
     setQuota(q)
 
@@ -79,17 +80,17 @@ export default function GeneratePage() {
 
   async function handleShareDownload() {
     Taro.setClipboardData({ data: typeof window !== 'undefined' ? window.location.href : '' })
-    const user = devMode.getUser()
-    await quotaApi.shareUnlock(user.id, 'generated')
-    await quotaApi.check(user.id).then(r => setQuota(r.data))
+    const userId = user?.id || ''
+    await quotaApi.shareUnlock(userId, 'generated')
+    await quotaApi.check(userId).then(r => setQuota(r.data))
     downloadFile()
   }
 
   async function handlePaidDownload() {
     Taro.showToast({ title: '支付功能开发中，当前免费体验', icon: 'none', duration: 2000 })
-    const user = devMode.getUser()
-    await quotaApi.consumeFree(user.id, 'generated')
-    await quotaApi.check(user.id).then(r => setQuota(r.data))
+    const userId = user?.id || ''
+    await quotaApi.consumeFree(userId, 'generated')
+    await quotaApi.check(userId).then(r => setQuota(r.data))
     downloadFile()
   }
 
@@ -106,7 +107,7 @@ export default function GeneratePage() {
     URL.revokeObjectURL(url)
     Taro.showToast({ title: '下载成功，双击打开即可使用', icon: 'success' })
     setShowGate(false)
-    quotaApi.check(devMode.getUser().id).then(r => setQuota(r.data))
+    quotaApi.check((user?.id ? user : { id: '' }).id).then(r => setQuota(r.data))
   }
 
   if (noQuota) {
