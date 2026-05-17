@@ -2,5 +2,7 @@ export default {
   env: { NODE_ENV: '"production"' },
   defineConstants: {},
   mini: {},
-  h5: {}
+  h5: {
+    publicPath: process.env.PUBLIC_PATH || '/'
+  }
 }

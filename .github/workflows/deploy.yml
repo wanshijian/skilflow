@@ -29,6 +29,7 @@ jobs:
 
       - run: npm run build:h5
         env:
+          PUBLIC_PATH: /skilflow/
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
 
