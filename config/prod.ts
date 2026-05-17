@@ -3,6 +3,7 @@ export default {
   defineConstants: {},
   mini: {},
   h5: {
-    publicPath: process.env.PUBLIC_PATH || '/'
+    publicPath: process.env.PUBLIC_PATH || '/',
+    router: { mode: 'browser' }
   }
 }
