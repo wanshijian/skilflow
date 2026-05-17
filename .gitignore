@@ -22,3 +22,7 @@ tokens-studio.json
 .claude/settings.local.json
 截图_export.html
 截图_export2.html
+*.png
+*-temp-*
+scripts/run-migrations.ts
+supabase/.temp/

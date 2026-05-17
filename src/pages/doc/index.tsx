@@ -2,10 +2,11 @@ import { View, Text, Textarea } from '@tarojs/components'
 import { useState } from 'react'
 import Taro from '@tarojs/taro'
 import Layout from '../../components/Layout'
-import { devMode } from '../../utils/devMode'
+import { useAuthStore } from '../../stores/authStore'
 import './index.scss'
 
 export default function DocPage() {
+  const { user } = useAuthStore()
   const [text, setText] = useState('')
   const [format, setFormat] = useState('normal')
   const [processing, setProcessing] = useState(false)
@@ -28,21 +29,20 @@ export default function DocPage() {
     setResult(null)
 
     try {
-      if (devMode.isActive) {
-        await new Promise(r => setTimeout(r, 800))
+      // 优先调 Edge Function，失败则客户端兜底
+      const { invokeEdgeFunction } = await import('../../utils/supabase')
+      const data = await invokeEdgeFunction<{ title?: string; sections?: any[]; text?: string }>('doc-cleanup', { text, format })
+      if (data && (data.text || data.sections)) {
+        setResult(data)
+      } else {
+        // Edge Function 不可用，客户端清洗兜底
         const cleaned = cleanText(text, format)
         setResult({ text: cleaned, title: extractTitle(cleaned) })
-      } else {
-        const { data } = await Taro.request({
-          url: `${process.env.SUPABASE_URL}/functions/v1/doc-cleanup`,
-          method: 'POST',
-          header: { 'Content-Type': 'application/json' },
-          data: { text, format }
-        })
-        if (data) setResult(data)
       }
     } catch {
-      Taro.showToast({ title: '处理失败，请重试', icon: 'none' })
+      // 网络失败也用客户端兜底
+      const cleaned = cleanText(text, format)
+      setResult({ text: cleaned, title: extractTitle(cleaned) })
     } finally {
       setProcessing(false)
     }
