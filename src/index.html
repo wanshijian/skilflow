@@ -11,8 +11,21 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <script>
-    // SPA fallback for GitHub Pages (404 redirect)
-    (function(){var r=sessionStorage.redirect;delete sessionStorage.redirect;if(r&&r!==location.href)history.replaceState(null,null,r)})();
+    // 拦截 Supabase OAuth 回调 hash，Taro hash router 前先处理
+    (function(){
+      var h = location.hash;
+      if (h && (h.indexOf('access_token=') !== -1 || h.indexOf('error=') !== -1)) {
+        // Supabase auth hash detected — save and strip before Taro reads it
+        var sep = h.indexOf('#') === 0 ? '#' : '';
+        var qs = h.replace('#','');
+        if (h.indexOf('access_token=') !== -1) {
+          sessionStorage.setItem('sb-auth-hash', qs);
+          location.hash = '/pages/index/index';
+        }
+      }
+    })();
+    // SPA fallback for GitHub Pages
+    (function(){var r=sessionStorage.getItem('redirect');sessionStorage.removeItem('redirect');if(r&&r!==location.href)history.replaceState(null,null,r)})();
     (function(){var w=750,b=20;function s(){var c=Math.min(document.documentElement.clientWidth,750);document.documentElement.style.fontSize=(c/w*b)+'px'}s();window.addEventListener('resize',s)})();
   </script>
 </head>

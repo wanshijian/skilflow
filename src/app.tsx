@@ -13,13 +13,19 @@ function App({ children }: PropsWithChildren<object>) {
   })
 
   useEffect(() => {
-    // 处理 OAuth 回调 — 等 Supabase 从 hash 中恢复 session 后再渲染
+    // 还原 OAuth 回调 hash 中的 session
+    const saved = sessionStorage.getItem('sb-auth-hash')
+    if (saved) {
+      sessionStorage.removeItem('sb-auth-hash')
+      // 手动设置 hash 让 Supabase 处理
+      location.hash = '#' + saved
+    }
+    // 等 Supabase 恢复 session
     supabase.auth.getSession().then(() => setReady(true))
     const { data: { subscription } } = supabase.auth.onAuthStateChange(() => {
       setReady(true)
     })
-    // 兜底：1.5秒后无论如何都渲染
-    const timeout = setTimeout(() => setReady(true), 1500)
+    const timeout = setTimeout(() => setReady(true), 2000)
     return () => { subscription.unsubscribe(); clearTimeout(timeout) }
   }, [])
 

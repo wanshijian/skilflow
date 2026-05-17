@@ -46,7 +46,7 @@ const config = {
       autoprefixer: { enable: true, config: {} },
       cssModules: { enable: false, config: { namingPattern: 'module', generateScopedName: '[name]__[local]___[hash:base64:5]' } }
     },
-    router: { mode: 'browser' },
+    router: { mode: 'hash' },
     devServer: { port: 10086, host: '0.0.0.0' },
     webpackChain(chain) {
       chain.resolve.alias.set('@', path.resolve(__dirname, '..', 'src'))
