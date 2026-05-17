@@ -1,0 +1,104 @@
+.app-result-page {
+  .loading {
+    text-align: center;
+    color: #8e8e93;
+    padding: 80px 0;
+    display: block;
+  }
+
+  .card {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 20px 24px;
+    margin-bottom: 16px;
+
+    &--error {
+      border-left: 4px solid #ff3b30;
+    }
+
+    &__label {
+      font-size: 22px;
+      color: #8e8e93;
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    &__value {
+      font-size: 28px;
+      color: #1d1d1f;
+      display: block;
+      line-height: 1.5;
+      margin-bottom: 12px;
+    }
+
+    &__meta {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    &__lang {
+      font-size: 20px;
+      padding: 4px 12px;
+      background: #007aff;
+      border-radius: 8px;
+      color: #ffffff;
+    }
+
+    &__status {
+      font-size: 22px;
+      color: #6e6e73;
+    }
+
+    &__header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    &__title {
+      font-size: 28px;
+      font-weight: 600;
+      color: #1d1d1f;
+    }
+
+    &__action {
+      font-size: 24px;
+      color: #007aff;
+    }
+
+    &__error-text {
+      font-size: 24px;
+      color: #ff3b30;
+      white-space: pre-wrap;
+    }
+  }
+
+  .code-block {
+    background: #1a1a2e;
+    border-radius: 8px;
+    padding: 16px;
+    max-height: 500px;
+    overflow-y: auto;
+
+    &__text {
+      font-size: 22px;
+      color: #98c379;
+      font-family: 'Consolas', 'Courier New', monospace;
+      white-space: pre-wrap;
+      word-break: break-all;
+      line-height: 1.6;
+    }
+  }
+
+  .bottom-info {
+    text-align: center;
+    padding: 20px;
+
+    &__expires {
+      font-size: 22px;
+      color: #c7c7cc;
+    }
+  }
+}

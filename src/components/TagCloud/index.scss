@@ -1,0 +1,4 @@
+.tag-cloud { display: flex; flex-wrap: wrap; gap: var(--s-2); padding: var(--s-4); background: var(--bg-card); border: 2px solid var(--border); border-radius: var(--r-md);
+  &__item { padding: var(--s-1-5) var(--s-3); border-radius: var(--r-sm); background: var(--bg-muted); color: var(--text-secondary); font-size: var(--t-xs); font-weight: 500; font-family: var(--font-body); border: 1px solid var(--border-light); transition: all var(--dur-fast) var(--ease-out);
+    &:hover { border-color: var(--border); transform: translate(-1px, -1px); } }
+}

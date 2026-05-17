@@ -1,0 +1,23 @@
+.layout {
+  min-height: 100vh;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.72), transparent 180px),
+    transparent;
+
+  &__content {
+    width: 100%;
+    max-width: 1120px;
+    margin: 0 auto;
+    padding: 18px 16px 92px;
+  }
+}
+
+// #ifdef H5
+@media (min-width: 768px) {
+  .layout {
+    &__content {
+      padding: 48px 32px 64px;
+    }
+  }
+}
+// #endif

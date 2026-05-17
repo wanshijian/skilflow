@@ -1,0 +1,8 @@
+.skill-list-page {
+  .search-bar { margin-bottom: var(--s-6); }
+  .h5-layout { @media(min-width:768px){ display: flex; gap: var(--s-8); } &__sidebar { @media(min-width:768px){ width:280px; flex-shrink:0; } @media(max-width:767px){ display:none; } } &__main { flex:1; } }
+  .result-header { margin-bottom: var(--s-4); &__count { font-family: var(--font-body); font-size: var(--t-sm); color: var(--text-muted); } }
+  .skill-list { display: flex; flex-direction: column; gap: var(--s-4); @media(min-width:768px){ display: grid; grid-template-columns: repeat(2, 1fr); } }
+  .empty { text-align: center; padding: var(--s-20) var(--s-4); &__text { font-family: var(--font-display); font-size: var(--t-xl); color: var(--text-primary); display: block; } &__hint { font-size: var(--t-sm); color: var(--text-muted); display: block; margin-top: var(--s-2); font-family: var(--font-body); } }
+  .filter-fab { position: fixed; right: var(--s-4); bottom: 100px; width: 48px; height: 48px; background: #1a1a1a; border: 2px solid #1a1a1a; border-radius: 50%; display: flex; align-items: center; justify-content: center; z-index: 100; &__icon { font-size: 18px; } }
+}

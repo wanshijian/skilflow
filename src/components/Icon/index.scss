@@ -1,0 +1,12 @@
+.icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  vertical-align: middle;
+
+  // Sizes matching Tailwind scale
+  &--sm { width: 16px; height: 16px; }
+  &--md { width: 20px; height: 20px; }
+  &--lg { width: 24px; height: 24px; }
+  &--xl { width: 32px; height: 32px; }
+}

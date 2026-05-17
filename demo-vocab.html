@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>单词背诵助手</title>
+<style>
+:root { --bg:#0F172A; --card:#1E293B; --text:#FAFAF9; --text2:#94A3B8; --accent:#F97316; --green:#34d399; --red:#ef4444; --radius:12px }
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding:16px;-webkit-font-smoothing:antialiased}
+.app{max-width:480px;margin:0 auto}
+h1{text-align:center;font-size:20px;margin-bottom:4px}
+.sub{text-align:center;font-size:13px;color:var(--text2);margin-bottom:20px}
+
+/* 模式切换 */
+.modes{display:flex;gap:4px;background:var(--card);border-radius:var(--radius);padding:4px;margin-bottom:16px}
+.mode{flex:1;text-align:center;padding:8px;border-radius:8px;font-size:13px;font-weight:500;color:var(--text2);cursor:pointer;transition:all .15s}
+.mode.active{background:var(--accent);color:#fff}
+
+/* 卡片 */
+.card{background:var(--card);border-radius:var(--radius);padding:24px;text-align:center;margin-bottom:12px;min-height:200px;display:flex;flex-direction:column;justify-content:center;cursor:pointer;user-select:none;transition:transform .15s}
+.card:active{transform:scale(.98)}
+.word{font-size:36px;font-weight:700;letter-spacing:-.02em;margin-bottom:8px}
+.phonetic{font-size:14px;color:var(--accent);margin-bottom:12px}
+.meaning{font-size:16px;color:var(--text2);line-height:1.6}
+.hint{font-size:12px;color:var(--text2);margin-top:16px;opacity:.5}
+
+/* 学习模式 */
+.learn-card{background:var(--card);border-radius:var(--radius);padding:20px}
+.learn-row{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid rgba(255,255,255,.06)}
+.learn-word{font-size:16px;font-weight:600}
+.learn-meaning{font-size:14px;color:var(--text2)}
+.learn-status{font-size:12px;padding:4px 8px;border-radius:8px;font-weight:500}
+.learn-status.new{background:rgba(249,115,22,.15);color:var(--accent)}
+.learn-status.learned{background:rgba(52,211,153,.15);color:var(--green)}
+.learn-status.struggling{background:rgba(239,68,68,.15);color:var(--red)}
+
+/* 按钮 */
+.btn{display:flex;width:100%;justify-content:center;padding:12px;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;border:none;margin-bottom:8px;transition:opacity .15s}
+.btn:hover{opacity:.9}
+.btn-primary{background:var(--accent);color:#fff}
+.btn-success{background:var(--green);color:#000}
+.btn-danger{background:var(--red);color:#fff}
+.btn-outline{background:transparent;border:1px solid rgba(255,255,255,.1);color:var(--text)}
+
+/* 统计 */
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px}
+.stat{background:var(--card);border-radius:var(--radius);padding:14px;text-align:center}
+.stat-val{font-size:24px;font-weight:700;display:block}
+.stat-label{font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:.05em;margin-top:2px}
+
+/* 添加单词 */
+.add-box{background:var(--card);border-radius:var(--radius);padding:16px;margin-bottom:16px}
+.add-input{width:100%;padding:10px;background:rgba(0,0,0,.3);border:1px solid rgba(255,255,255,.1);border-radius:8px;color:var(--text);font-size:14px;margin-bottom:8px;font-family:system-ui,sans-serif}
+.add-row{display:flex;gap:8px}
+.add-row input{flex:1}
+
+/* 进度条 */
+.progress-bar{height:4px;background:rgba(255,255,255,.06);border-radius:2px;margin-bottom:16px;overflow:hidden}
+.progress-fill{height:100%;background:var(--accent);border-radius:2px;transition:width .3s}
+
+/* 语音按钮 */
+.speak-btn{display:inline-flex;align-items:center;gap:4px;font-size:13px;color:var(--accent);cursor:pointer;padding:4px 10px;border-radius:8px;background:rgba(249,115,22,.1);margin-top:12px;border:none}
+</style>
+</head>
+<body>
+<div class="app">
+  <h1>📖 单词背诵助手</h1>
+  <div class="sub" id="subtitle">共 0 个单词 · 已掌握 0 个</div>
+
+  <!-- 模式 -->
+  <div class="modes">
+    <div class="mode active" data-mode="review">🔄 背诵</div>
+    <div class="mode" data-mode="learn">📋 词库</div>
+    <div class="mode" data-mode="add">➕ 添加</div>
+  </div>
+
+  <!-- 复习模式 -->
+  <div id="reviewView">
+    <div class="progress-bar"><div class="progress-fill" id="progress" style="width:0%"></div></div>
+    <div class="stats">
+      <div class="stat"><span class="stat-val" id="totalWords">0</span><span class="stat-label">总单词</span></div>
+      <div class="stat"><span class="stat-val" style="color:var(--green)" id="learnedCount">0</span><span class="stat-label">已掌握</span></div>
+      <div class="stat"><span class="stat-val" style="color:var(--accent)" id="remainCount">0</span><span class="stat-label">待复习</span></div>
+    </div>
+    <div class="card" id="flashCard" onclick="flipCard()">
+      <div class="word" id="cardWord">点击开始</div>
+      <div class="meaning" id="cardMeaning" style="display:none"></div>
+      <div class="hint" id="cardHint">👆 点击翻转查看释义</div>
+    </div>
+    <div id="cardActions" style="display:none">
+      <button class="btn btn-danger" onclick="markAgain()">😕 再看一次</button>
+      <button class="btn btn-success" onclick="markGood()">✅ 记住了</button>
+      <button class="btn btn-outline" onclick="speakWord()">🔊 发音</button>
+    </div>
+  </div>
+
+  <!-- 词库模式 -->
+  <div id="learnView" style="display:none">
+    <div style="display:flex;gap:8px;margin-bottom:12px">
+      <input class="add-input" id="searchInput" placeholder="搜索单词…" oninput="renderWordList()" style="margin-bottom:0">
+    </div>
+    <div id="wordList"></div>
+  </div>
+
+  <!-- 添加模式 -->
+  <div id="addView" style="display:none">
+    <div class="add-box">
+      <div class="add-row">
+        <input class="add-input" id="newWord" placeholder="英文单词" style="margin-bottom:0">
+        <input class="add-input" id="newMeaning" placeholder="中文释义" style="margin-bottom:0">
+      </div>
+      <button class="btn btn-primary" onclick="addWord()" style="margin-top:8px">添加单词</button>
+      <button class="btn btn-outline" onclick="addDemoWords()">📥 添加示例词库 (20个高考核心词)</button>
+      <button class="btn btn-outline" onclick="importWords()">📄 从文本批量导入</button>
+    </div>
+    <div class="add-box">
+      <p style="font-size:12px;color:var(--text2);line-height:1.7">
+        💡 <b>批量导入格式</b>：每行一个，用空格或逗号分隔<br>
+        示例：<br>
+        abandon 放弃<br>
+        abstract 抽象的<br>
+        academy 学院
+      </p>
+    </div>
+  </div>
+</div>
+
+<script>
+// ===== 数据层 (localStorage) =====
+const STORAGE_KEY = 'vocab_words'
+
+function loadWords() {
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || [] }
+  catch { return [] }
+}
+
+function saveWords(words) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(words))
+}
+
+// 单词结构: { id, word, meaning, status:'new'|'learning'|'learned', reviewedAt, reviewCount }
+
+// ===== 初始化 =====
+let words = loadWords()
+let currentMode = 'review'
+let currentIndex = 0
+let isFlipped = false
+
+function init() {
+  if (words.length === 0) {
+    addDemoWords()
+  }
+  switchMode('review')
+  render()
+}
+init()
+
+// ===== 模式切换 =====
+document.querySelectorAll('.mode').forEach(el => {
+  el.onclick = () => switchMode(el.dataset.mode)
+})
+
+function switchMode(mode) {
+  currentMode = mode
+  document.querySelectorAll('.mode').forEach(e => e.classList.remove('active'))
+  document.querySelector(`[data-mode="${mode}"]`).classList.add('active')
+  document.getElementById('reviewView').style.display = mode === 'review' ? 'block' : 'none'
+  document.getElementById('learnView').style.display = mode === 'learn' ? 'block' : 'none'
+  document.getElementById('addView').style.display = mode === 'add' ? 'block' : 'none'
+  if (mode === 'review') { currentIndex = 0; isFlipped = false; showCard() }
+  if (mode === 'learn') renderWordList()
+  updateStats()
+}
+
+// ===== 背诵模式 =====
+function getReviewWords() {
+  return words.filter(w => w.status !== 'learned')
+}
+
+function showCard() {
+  const reviewWords = getReviewWords()
+  if (reviewWords.length === 0) {
+    document.getElementById('cardWord').textContent = '🎉 全部掌握！'
+    document.getElementById('cardMeaning').style.display = 'none'
+    document.getElementById('cardHint').textContent = '去添加更多单词吧'
+    document.getElementById('cardActions').style.display = 'none'
+    updateStats()
+    return
+  }
+  // 优先出不熟悉的
+  reviewWords.sort((a, b) => (a.reviewCount || 0) - (b.reviewCount || 0))
+  const word = reviewWords[0]
+  currentIndex = words.indexOf(word)
+  isFlipped = false
+  document.getElementById('cardWord').textContent = word.word
+  document.getElementById('cardMeaning').textContent = word.meaning
+  document.getElementById('cardMeaning').style.display = 'none'
+  document.getElementById('cardHint').textContent = '👆 点击翻转查看释义'
+  document.getElementById('cardActions').style.display = 'none'
+  updateStats()
+}
+
+function flipCard() {
+  if (getReviewWords().length === 0) return
+  isFlipped = !isFlipped
+  document.getElementById('cardMeaning').style.display = isFlipped ? 'block' : 'none'
+  document.getElementById('cardHint').textContent = isFlipped ? '' : '👆 点击翻转查看释义'
+  document.getElementById('cardActions').style.display = isFlipped ? 'block' : 'none'
+}
+
+function markAgain() {
+  const word = words[currentIndex]
+  if (!word) return
+  word.status = 'new'
+  word.reviewedAt = Date.now()
+  word.reviewCount = (word.reviewCount || 0) + 1
+  saveWords(words)
+  showCard()
+}
+
+function markGood() {
+  const word = words[currentIndex]
+  if (!word) return
+  word.status = 'learned'
+  word.reviewedAt = Date.now()
+  word.reviewCount = (word.reviewCount || 0) + 1
+  saveWords(words)
+  showCard()
+}
+
+function speakWord() {
+  const word = words[currentIndex]
+  if (!word || !window.speechSynthesis) return
+  const u = new SpeechSynthesisUtterance(word.word)
+  u.lang = 'en-US'; u.rate = 0.8
+  speechSynthesis.speak(u)
+}
+
+// ===== 词库模式 =====
+function renderWordList() {
+  const q = (document.getElementById('searchInput')?.value || '').toLowerCase()
+  const filtered = q ? words.filter(w => w.word.toLowerCase().includes(q) || w.meaning.includes(q)) : words
+  const container = document.getElementById('wordList')
+  if (filtered.length === 0) {
+    container.innerHTML = '<p style="text-align:center;color:var(--text2);padding:40px">没有匹配的单词</p>'
+    return
+  }
+  container.innerHTML = filtered.map(w => `
+    <div class="learn-row">
+      <div>
+        <div class="learn-word">${w.word}</div>
+        <div class="learn-meaning">${w.meaning}</div>
+      </div>
+      <span class="learn-status ${w.status === 'learned' ? 'learned' : w.status === 'new' ? 'new' : 'struggling'}">
+        ${w.status === 'learned' ? '✅ 已掌握' : w.status === 'new' ? '🆕 新词' : '🔄 复习中'}
+      </span>
+    </div>
+  `).join('')
+}
+
+// ===== 添加模式 =====
+function addWord() {
+  const wordEl = document.getElementById('newWord')
+  const meaningEl = document.getElementById('newMeaning')
+  const w = wordEl.value.trim(); const m = meaningEl.value.trim()
+  if (!w || !m) { alert('请输入单词和释义'); return }
+  words.push({ id: Date.now(), word: w, meaning: m, status: 'new', reviewedAt: 0, reviewCount: 0 })
+  saveWords(words)
+  wordEl.value = ''; meaningEl.value = ''
+  updateStats()
+  alert(`已添加: ${w}`)
+}
+
+function addDemoWords() {
+  const demo = [
+    ['abandon','放弃'],['abstract','抽象的'],['academy','学院'],
+    ['barrier','障碍'],['budget','预算'],['burden','负担'],
+    ['campaign','运动；战役'],['capacity','容量；能力'],['category','类别'],
+    ['debate','辩论'],['decline','下降；拒绝'],['defense','防御'],
+    ['economy','经济'],['eliminate','消除'],['emerge','出现'],
+    ['facility','设施'],['federal','联邦的'],['fiction','小说'],
+    ['global','全球的'],['guarantee','保证']
+  ]
+  demo.forEach(([word, meaning]) => {
+    if (!words.find(w => w.word === word)) {
+      words.push({ id: Date.now() + Math.random(), word, meaning, status: 'new', reviewedAt: 0, reviewCount: 0 })
+    }
+  })
+  saveWords(words)
+  updateStats()
+  if (currentMode === 'learn') renderWordList()
+  if (currentMode === 'review') showCard()
+}
+
+function importWords() {
+  const text = prompt('粘贴单词列表（每行: word meaning）')
+  if (!text) return
+  const lines = text.split('\n').filter(l => l.trim())
+  let added = 0
+  lines.forEach(line => {
+    const parts = line.trim().split(/[\s,，]+/)
+    if (parts.length >= 2) {
+      const word = parts[0]; const meaning = parts.slice(1).join(' ')
+      if (word && meaning && !words.find(w => w.word === word)) {
+        words.push({ id: Date.now() + Math.random(), word, meaning, status: 'new', reviewedAt: 0, reviewCount: 0 })
+        added++
+      }
+    }
+  })
+  saveWords(words)
+  updateStats()
+  if (currentMode === 'learn') renderWordList()
+  if (currentMode === 'review') showCard()
+  alert(`已导入 ${added} 个单词`)
+}
+
+// ===== 统计 =====
+function updateStats() {
+  const total = words.length
+  const learned = words.filter(w => w.status === 'learned').length
+  const remain = total - learned
+  document.getElementById('totalWords').textContent = total
+  document.getElementById('learnedCount').textContent = learned
+  document.getElementById('remainCount').textContent = remain
+  document.getElementById('subtitle').textContent = `共 ${total} 个单词 · 已掌握 ${learned} 个`
+  const pct = total > 0 ? (learned / total * 100) : 0
+  document.getElementById('progress').style.width = pct + '%'
+}
+</script>
+</body>
+</html>

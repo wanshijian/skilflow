@@ -1,0 +1,11 @@
+.quota-bar {
+  background: #1a1a1a; color: #fff;
+  border-radius: var(--r-md); padding: var(--s-3) var(--s-5); margin-bottom: var(--s-4);
+
+  &__normal { display: flex; align-items: center; justify-content: space-between; font-family: var(--font-body); }
+  &__left { display: flex; align-items: center; gap: var(--s-2); }
+  &__text { font-size: var(--t-sm); color: rgba(255,255,255,.7); }
+  &__count { font-family: var(--font-display); font-size: var(--t-xl); font-weight: 400; color: #fff; }
+  &__expire { font-size: var(--t-xs); color: rgba(255,255,255,.4); margin-left: var(--s-2); font-family: var(--font-body); }
+  &__upgrade { background: var(--accent); padding: var(--s-1) var(--s-3); border-radius: var(--r-sm); &-text { font-size: var(--t-xs); font-weight: 600; color: #fff; font-family: var(--font-body); } }
+}

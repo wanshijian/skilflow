@@ -1,0 +1,5 @@
+.showcase-page {
+  .page-header { margin-bottom: var(--s-10); &__title { font-family: var(--font-display); font-size: var(--t-3xl); font-weight: 400; color: var(--text-primary); display: block; margin-bottom: var(--s-2); } &__subtitle { font-family: var(--font-body); font-size: var(--t-sm); color: var(--text-muted); display: block; } }
+  .app-list { display: flex; flex-direction: column; gap: var(--s-4); @media(min-width:768px){ display: grid; grid-template-columns: repeat(2, 1fr); } }
+  .empty { text-align: center; padding: var(--s-20) var(--s-4); &__icon { font-size: 48px; display: block; margin-bottom: var(--s-4); } &__text { font-family: var(--font-display); font-size: var(--t-xl); color: var(--text-primary); display: block; margin-bottom: var(--s-5); } &__btn { display: inline-block; padding: var(--s-3) var(--s-6); background: var(--accent); border: 2px solid var(--accent); border-radius: var(--r-sm); &-text { font-family: var(--font-body); font-size: var(--t-sm); color: #fff; font-weight: 600; } } }
+}

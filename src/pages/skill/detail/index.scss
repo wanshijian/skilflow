@@ -1,0 +1,20 @@
+.skill-detail-page {
+  .skill-header { margin-bottom: var(--s-8);
+    &__title { font-family: var(--font-display); font-size: var(--t-3xl); font-weight: 400; color: var(--text-primary); display: block; margin-bottom: var(--s-2); letter-spacing: -.02em; }
+    &__meta { display: flex; gap: var(--s-4); align-items: center; font-family: var(--font-body); }
+    &__author { font-size: var(--t-sm); color: var(--accent); font-weight: 600; }
+    &__stars { font-size: var(--t-sm); color: var(--text-muted); } }
+  .skill-tags { display: flex; flex-wrap: wrap; gap: var(--s-1); margin-bottom: var(--s-8); }
+
+  .card { background: var(--bg-card); border: 2px solid var(--border); border-radius: var(--r-md); padding: var(--s-6); margin-bottom: var(--s-4);
+    &__title { font-family: var(--font-display); font-size: var(--t-lg); font-weight: 400; color: var(--text-primary); display: block; margin-bottom: var(--s-3); }
+    &__text { font-size: var(--t-sm); color: var(--text-secondary); line-height: 1.7; display: block; font-family: var(--font-body); } }
+
+  .use-case { margin-bottom: var(--s-3); &__title { font-family: var(--font-body); font-size: var(--t-sm); font-weight: 600; color: var(--accent); } &__desc { font-size: var(--t-sm); color: var(--text-secondary); margin-top: 2px; font-family: var(--font-body); } }
+  .params-row { display: flex; gap: var(--s-4); margin-bottom: var(--s-2); font-family: var(--font-body); &__label { font-size: var(--t-sm); color: var(--text-muted); min-width: 50px; font-weight: 600; } &__value { font-size: var(--t-sm); color: var(--text-primary); } }
+  .skill-actions { margin-bottom: var(--s-8); }
+  .comment { padding: var(--s-3) 0; border-bottom: 2px solid var(--border-light); &__author { font-size: var(--t-sm); color: var(--accent); font-weight: 600; font-family: var(--font-body); } &__text { font-size: var(--t-sm); color: var(--text-secondary); margin-top: var(--s-1); display: block; font-family: var(--font-body); } }
+  .comment-input { display: flex; gap: var(--s-2); margin-top: var(--s-4); align-items: center; }
+  .comment-input__field { flex: 1; height: 44px; background: var(--bg-muted); border: 2px solid var(--border); border-radius: var(--r-sm); padding: 0 var(--s-3); font-size: var(--t-sm); color: var(--text-primary); font-family: var(--font-body); }
+  .comment-input__btn { padding: var(--s-2) var(--s-4); background: #1a1a1a; border: 2px solid var(--border); border-radius: var(--r-sm); Text { font-size: var(--t-sm); color: #fff; font-weight: 600; font-family: var(--font-body); } }
+}

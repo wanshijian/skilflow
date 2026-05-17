@@ -1,0 +1,10 @@
+.search-box {
+  display: flex; align-items: center;
+  background: var(--bg-card); border: 2px solid var(--border); border-radius: var(--r-sm);
+  padding: 0 var(--s-4); height: 48px;
+  transition: border-color var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out);
+  &:focus-within { border-color: var(--accent); box-shadow: calc(var(--s-1)) calc(var(--s-1)) 0 var(--border); }
+  &__icon { opacity: .4; margin-right: var(--s-2); display: flex; }
+  &__input { flex: 1; height: 100%; font-size: var(--t-sm); color: var(--text-primary); background: transparent; font-family: var(--font-body); &::placeholder { color: var(--text-muted); } }
+  &__clear { opacity: .4; padding: var(--s-1); display: flex; }
+}

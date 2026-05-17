@@ -1,0 +1,4 @@
+.tag-bar { white-space: nowrap; padding: var(--s-3) 0; margin-bottom: var(--s-3);
+  &__item { display: inline-block; font-size: var(--t-sm); font-weight: 500; padding: var(--s-1-5) var(--s-4); border-radius: var(--r-sm); background: var(--bg-card); color: var(--text-secondary); margin-right: var(--s-2); flex-shrink: 0; border: 2px solid var(--border); font-family: var(--font-body); transition: all var(--dur-fast) var(--ease-out);
+    &--active { background: #1a1a1a; color: #fff; } }
+}

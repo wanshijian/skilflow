@@ -1,0 +1,59 @@
+{
+  "name": "skilflow",
+  "version": "1.0.0",
+  "private": true,
+  "description": "AI Skill Hub - 全球 AI 技能自动化聚合、分发与调用平台",
+  "templateInfo": {
+    "name": "default",
+    "typescript": true,
+    "css": "sass"
+  },
+  "scripts": {
+    "dev:h5": "npx taro build --type h5 --watch",
+    "dev:weapp": "npx taro build --type weapp --watch",
+    "build:h5": "npx taro build --type h5",
+    "build:weapp": "npx taro build --type weapp",
+    "scrape": "npx tsx scripts/scraper.ts",
+    "generate-llms": "npx tsx scripts/generate-llms-txt.ts"
+  },
+  "browserslist": [
+    "last 3 versions",
+    "Android >= 4.1",
+    "ios >= 8"
+  ],
+  "author": "",
+  "dependencies": {
+    "@babel/runtime": "^7.24.0",
+    "@supabase/supabase-js": "^2.49.0",
+    "@tarojs/components": "^3.6.0",
+    "@tarojs/helper": "^3.6.0",
+    "@tarojs/plugin-framework-react": "^3.6.0",
+    "@tarojs/plugin-platform-h5": "^3.6.0",
+    "@tarojs/plugin-platform-weapp": "^3.2.16",
+    "@tarojs/react": "^3.6.0",
+    "@tarojs/runtime": "^3.6.0",
+    "@tarojs/shared": "^3.6.0",
+    "@tarojs/taro": "^3.6.0",
+    "process": "^0.11.10",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "zustand": "^4.5.0"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.24.0",
+    "@babel/preset-react": "^7.24.0",
+    "@tarojs/cli": "^3.6.5",
+    "@tarojs/webpack5-runner": "^3.6.0",
+    "@types/node": "^20.11.0",
+    "@types/react": "^18.2.0",
+    "@types/webpack-env": "^1.18.0",
+    "babel-preset-taro": "^3.6.0",
+    "postcss": "^8.4.0",
+    "sass": "^1.75.0",
+    "@pmmmwh/react-refresh-webpack-plugin": "^0.5.15",
+    "react-refresh": "^0.14.2",
+    "tsx": "^4.16.0",
+    "typescript": "^5.4.0",
+    "webpack": "5.88.2"
+  }
+}

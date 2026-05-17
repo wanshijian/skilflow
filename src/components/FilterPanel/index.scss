@@ -1,0 +1,11 @@
+.filter-panel { background: var(--bg-card); border: 2px solid var(--border); border-radius: var(--r-md); padding: var(--s-6);
+  &__header { display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--s-5); padding-bottom: var(--s-4); border-bottom: 2px solid var(--border); }
+  &__title { font-family: var(--font-display); font-size: var(--t-lg); font-weight: 400; color: var(--text-primary); }
+  &__clear { font-size: var(--t-xs); color: var(--accent); text-transform: uppercase; letter-spacing: .05em; font-weight: 600; font-family: var(--font-body); }
+  .filter-section { margin-bottom: var(--s-5); }
+  .filter-section__label { font-size: var(--t-xs); font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: .1em; margin-bottom: var(--s-3); display: block; font-family: var(--font-body); }
+  .filter-section__items { display: flex; flex-wrap: wrap; gap: var(--s-1); }
+  .filter-tag { font-size: var(--t-xs); font-weight: 500; padding: var(--s-1) var(--s-3); border-radius: var(--r-sm); background: var(--bg-muted); color: var(--text-secondary); border: 1px solid var(--border-light); font-family: var(--font-body); transition: all var(--dur-fast) var(--ease-out);
+    &--active { background: #1a1a1a; color: #fff; border-color: #1a1a1a; }
+    &:hover { border-color: var(--border); } }
+}
