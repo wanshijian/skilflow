@@ -212,14 +212,19 @@ export default function GeneratePage() {
         </View>
 
         <View className="composer">
-          <Textarea
-            className="composer__input"
-            value={formData.prompt}
-            onInput={(e) => setFormData({ prompt: e.detail.value })}
-            placeholder="描述你想要的小工具，例如：做一个 Word 转 PDF 工具，支持拖拽上传"
-            maxlength={500}
-            autoHeight
-          />
+          <View className="composer__prompt">
+            <Textarea
+              className="composer__input"
+              value={formData.prompt}
+              onInput={(e) => setFormData({ prompt: e.detail.value })}
+              placeholder="描述你想要的小工具，例如：做一个 Word 转 PDF 工具，支持拖拽上传..."
+              maxlength={500}
+              autoHeight
+            />
+            <View className="composer__prompt-footer">
+              <Text className="composer__count">{formData.prompt.length}/500</Text>
+            </View>
+          </View>
 
           <View className="composer__section">
             <Text className="composer__label">工具类型</Text>
@@ -248,7 +253,6 @@ export default function GeneratePage() {
           </View>
 
           <View className="composer__footer">
-            <Text className="composer__count">{formData.prompt.length}/500</Text>
             <View className="generate-btn" onClick={handleGenerate}>
               <Text className="generate-btn__text">开始生成</Text>
             </View>
