@@ -97,6 +97,9 @@ page {
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
 // #ifdef H5
+html {
+  font-size: 16px !important; // override Taro dynamic font-size, we use px-based tokens
+}
 html, body, #app {
   min-height: 100%;
   background: var(--color-bg);
