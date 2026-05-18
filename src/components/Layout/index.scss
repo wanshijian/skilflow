@@ -1,12 +1,9 @@
 .layout {
   min-height: 100vh;
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.72), transparent 180px),
-    transparent;
 
   &__content {
     width: 100%;
-    padding: 18px 20px 92px;
+    padding: var(--sp-5) var(--sp-5) 6rem;
   }
 }
 
@@ -14,7 +11,7 @@
 @media (min-width: 768px) {
   .layout {
     &__content {
-      padding: 48px 40px 64px;
+      padding: var(--sp-12) var(--sp-10) var(--sp-16);
     }
   }
 }
@@ -22,7 +19,7 @@
 @media (min-width: 1600px) {
   .layout {
     &__content {
-      padding: 56px 64px 64px;
+      padding: var(--sp-16) var(--sp-16) var(--sp-16);
     }
   }
 }

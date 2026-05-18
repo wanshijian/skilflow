@@ -2,10 +2,10 @@
   position: sticky;
   top: 0;
   z-index: 50;
-  border-bottom: 1px solid var(--border);
-  background: rgba(255, 255, 255, 0.92);
-  backdrop-filter: blur(18px);
-  -webkit-backdrop-filter: blur(18px);
+  border-bottom: 1px solid var(--color-border);
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(12px) saturate(180%);
+  -webkit-backdrop-filter: blur(12px) saturate(180%);
 
   &__inner {
     display: flex;
@@ -13,70 +13,55 @@
     justify-content: space-between;
     width: 100%;
     height: 64px;
-    padding: 0 24px;
+    padding: 0 var(--sp-6);
   }
 
   &__logo {
-    font-family: var(--font-display);
-    font-size: 24px;
+    font-family: var(--font-sans);
+    font-size: var(--text-xl);
     font-weight: 900;
-    letter-spacing: 0;
+    letter-spacing: -0.03em;
     cursor: pointer;
-    color: var(--text);
+    color: var(--color-text);
   }
 
   &__nav {
     display: flex;
-    gap: 6px;
+    gap: 4px;
     padding: 4px;
-    border: 1px solid var(--border);
-    border-radius: 999px;
-    background: #f1f5f9;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-full);
+    background: var(--color-surface-muted);
   }
 
   &__link {
-    min-width: 58px;
+    min-width: 56px;
     padding: 8px 14px;
-    border-radius: 999px;
-    color: var(--text-2);
-    font-family: var(--font-body);
-    font-size: 13px;
+    border-radius: var(--radius-full);
+    color: var(--color-text-secondary);
+    font-size: var(--text-sm);
     font-weight: 600;
     line-height: 1;
     text-align: center;
     cursor: pointer;
-    transition: color var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out);
+    transition: all var(--duration-fast) var(--ease-out);
 
-    &:hover {
-      color: var(--text);
-      background: #ffffff;
-    }
+    &:hover { color: var(--color-text); background: var(--color-surface); }
   }
 }
 
 // #ifdef H5
 @media (max-width: 767px) {
   .site-header {
-    &__inner {
-      height: 56px;
-      padding: 0 16px;
-    }
-
-    &__logo {
-      font-size: 22px;
-    }
-
-    &__nav {
-      display: none;
-    }
+    &__inner { height: 56px; padding: 0 var(--sp-4); }
+    &__logo { font-size: var(--text-lg); }
+    &__nav { display: none; }
   }
 }
 
 @media (min-width: 1600px) {
   .site-header {
-    &__inner {
-      padding: 0 64px;
-    }
+    &__inner { padding: 0 var(--sp-16); }
   }
 }
 // #endif
