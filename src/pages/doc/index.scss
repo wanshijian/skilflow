@@ -32,9 +32,9 @@
 
   .doc-textarea {
     width: 100%; min-height: 220px;
-    color: var(--color-text); background: transparent; font-size: var(--text-base); line-height: 1.75;
-    border: none; outline: none; resize: none;
-    &::placeholder { color: var(--color-text-muted); }
+    color: var(--color-text); background: transparent; font-size: var(--text-md); line-height: 1.75;
+    border: none; outline: none; resize: none; color-scheme: light;
+    &::placeholder { color: var(--color-text-muted); font-size: var(--text-base); }
   }
 
   .input-footer { display: flex; justify-content: flex-end; margin-top: var(--sp-3); }
