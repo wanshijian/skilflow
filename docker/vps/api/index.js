@@ -10,7 +10,7 @@ import express from 'express';
 
 const PORT = process.env.CODE_GEN_PORT || 8081;
 const SERVICE_API_KEY = process.env.SERVICE_API_KEY || 'dev-key';
-const TIMEOUT_MS = parseInt(process.env.GENERATION_TIMEOUT || '120000', 10);
+const TIMEOUT_MS = parseInt(process.env.GENERATION_TIMEOUT || '300000', 10);
 
 // Claude Code config: point to our proxy
 const PROXY_URL = process.env.ANTHROPIC_BASE_URL || 'http://proxy:8787';
