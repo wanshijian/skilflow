@@ -69,13 +69,12 @@ function runClaudeCode(userPrompt, timeout) {
     const child = spawn('claude', [
       '-p',
       '--output-format', 'json',
-      '--dangerously-skip-permissions',
       '--no-session-persistence',
       userPrompt,
     ], {
       env,
       cwd: WORKSPACE,
-      stdio: ['pipe', 'pipe', 'pipe'],
+      stdio: ['ignore', 'pipe', 'pipe'],  // ignore stdin (like < /dev/null)
       timeout,
     });
 

@@ -1,6 +1,9 @@
 FROM node:22-slim
 
-# Install Claude Code CLI
+# Create non-root user (Claude Code requires this)
+RUN useradd --create-home --shell /bin/bash codegen
+
+# Install Claude Code CLI as root (installs globally)
 RUN npm install -g @anthropic-ai/claude-code 2>/dev/null || npm install -g @anthropic-ai/claude-code@latest
 
 WORKDIR /app
@@ -8,8 +11,10 @@ COPY api/package.json .
 RUN npm install --production
 COPY api/index.js .
 
-# Workspace with project context
-RUN mkdir -p /workspace /skills
+# Workspace dirs
+RUN mkdir -p /workspace /skills && chown -R codegen:codegen /workspace /skills /app
+
+USER codegen
 
 EXPOSE 8081
 CMD ["node", "index.js"]
