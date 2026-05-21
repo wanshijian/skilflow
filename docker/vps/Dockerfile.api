@@ -1,0 +1,15 @@
+FROM node:22-slim
+
+# Install Claude Code CLI
+RUN npm install -g @anthropic-ai/claude-code 2>/dev/null || npm install -g @anthropic-ai/claude-code@latest
+
+WORKDIR /app
+COPY api/package.json .
+RUN npm install --production
+COPY api/index.js .
+
+# Workspace with project context
+RUN mkdir -p /workspace /skills
+
+EXPOSE 8081
+CMD ["node", "index.js"]

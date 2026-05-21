@@ -1,12 +1,12 @@
 // SkillFlow: 文档整理 Edge Function
-// 接收 AI 生成的文本 → Claude 清洗排版 → 返回结构化 JSON
+// 接收 AI 生成的文本 → VPS Code Gen Service 清洗排版 → 返回结构化 JSON
+// VPS 不可用时 fallback 到直接 Claude API
 
 import { serve } from 'https://deno.land/std@0.208.0/http/server.ts'
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 const ANTHROPIC_API_KEY = Deno.env.get('ANTHROPIC_API_KEY') || ''
-const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!
-const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+const CODE_GEN_URL = Deno.env.get('CODE_GEN_SERVICE_URL') || '' // VPS 地址
+const SERVICE_API_KEY = Deno.env.get('SERVICE_API_KEY') || ''   // VPS 认证密钥
 
 const SYSTEM_PROMPT = `你是文档整理专家。接收用户粘贴的 AI 生成文本，完成清洗和排版。
 
@@ -50,10 +50,21 @@ serve(async (req: Request) => {
     const { text, format } = await req.json()
     if (!text) return new Response(JSON.stringify({ error: 'Missing text' }), { status: 400, headers: { 'Content-Type': 'application/json' } })
 
-    // 获取该格式的 prompt 模板（未来从 DB 读）
-    const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
+    // 如果配置了 VPS 生成服务，转发过去
+    if (CODE_GEN_URL) {
+      const vpsRes = await fetch(`${CODE_GEN_URL}/cleanup/document`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-API-Key': SERVICE_API_KEY
+        },
+        body: JSON.stringify({ text, format: format || 'normal' })
+      })
+      const vpsData = await vpsRes.json()
+      return new Response(JSON.stringify(vpsData), { headers: { 'Content-Type': 'application/json' } })
+    }
 
-    // 调 Claude API
+    // 开发阶段：直接调 Claude API（VPS 不可用时的 fallback）
     const claudeRes = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {

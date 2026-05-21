@@ -1,0 +1,53 @@
+version: '3.8'
+
+# SkillFlow VPS: Claude Code CLI + Anthropic→DeepSeek Proxy
+# Edge Functions → code-gen-api → Claude Code → proxy → DeepSeek
+
+services:
+  # Anthropic → DeepSeek format converter
+  proxy:
+    build:
+      context: .
+      dockerfile: Dockerfile.proxy
+    container_name: skilflow-proxy
+    ports:
+      - "8787:8787"
+    environment:
+      - PROXY_PORT=8787
+      - DEEPSEEK_API_KEY=${DEEPSEEK_API_KEY}
+      - DEEPSEEK_BASE_URL=${DEEPSEEK_BASE_URL:-https://api.deepseek.com/v1}
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # Code Gen HTTP API (spawns Claude Code)
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    container_name: skilflow-code-gen-api
+    ports:
+      - "8081:8081"
+    environment:
+      - CODE_GEN_PORT=8081
+      - SERVICE_API_KEY=${SERVICE_API_KEY:-dev-key}
+      - ANTHROPIC_BASE_URL=http://proxy:8787
+      - GENERATION_TIMEOUT=120000
+      - WORKSPACE_DIR=/workspace
+      - SKILLS_DIR=/skills
+    volumes:
+      - ../../CLAUDE.md:/workspace/CLAUDE.md:ro
+      - ../../DESIGN.md:/workspace/DESIGN.md:ro
+      - ../../DEVDOC.md:/workspace/DEVDOC.md:ro
+      - ../../.claude/skills:/skills:ro
+    depends_on:
+      - proxy
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"

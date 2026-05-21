@@ -39,5 +39,31 @@ services:
     volumes:
       - redis-data:/data
 
+  # AI 生成编排服务
+  code-gen-service:
+    build:
+      context: ..
+      dockerfile: docker/code-gen-service/Dockerfile
+    container_name: skilflow-code-gen
+    ports:
+      - "8081:8081"
+    environment:
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - DEEPSEEK_API_KEY=${DEEPSEEK_API_KEY}
+      - DEEPSEEK_BASE_URL=${DEEPSEEK_BASE_URL:-https://api.deepseek.com/v1}
+      - LLM_PROVIDER=${LLM_PROVIDER:-anthropic}
+      - SUPABASE_URL=${SUPABASE_URL}
+      - SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY}
+      - SERVICE_API_KEY=${SERVICE_API_KEY:-dev-key}
+      - CODE_GEN_PORT=8081
+      - CONFIG_RELOAD_INTERVAL=300
+      - LOG_LEVEL=info
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
 volumes:
   redis-data:
