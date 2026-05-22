@@ -31,7 +31,7 @@ export default function GeneratePage() {
   const [showGate, setShowGate] = useState(false)
   const [noQuota, setNoQuota] = useState(false)
 
-  // === 开始生成（用户主动点击） ===
+  // === 开始生成 ===
   async function handleGenerate() {
     if (!formData.prompt.trim()) {
       Taro.showToast({ title: '先描述一下你想要的小工具', icon: 'none' })
@@ -42,7 +42,6 @@ export default function GeneratePage() {
       return
     }
 
-    // 查配额
     const { data: q } = await quotaApi.check(user.id)
     setQuota(q)
     if (!q?.canUseFree && q?.remainingFree <= 0) {
@@ -70,7 +69,6 @@ export default function GeneratePage() {
         await new Promise(r => setTimeout(r, 400))
         setPhase('')
 
-        // 模拟流式展示
         const lines = result.html.split('\n')
         let acc = ''
         for (const line of lines) {
@@ -85,43 +83,28 @@ export default function GeneratePage() {
         setStep('input')
       }
     } catch {
-      // Edge Function 不可用，提示用户
       Taro.showToast({ title: '生成服务暂不可用，请稍后重试', icon: 'none', duration: 2000 })
       setStep('input')
     }
   }
 
-  // === 重试 ===
-  async function handleRetry() {
+  // === 返回首页重新开始 ===
+  function handleStartNew() {
+    setFormData({ prompt: '' })
+    setGenerated('', '')
+    setStreamedCode('')
     setFeedback('')
     setRetryContext(null)
-    setStep('generating')
-    setStreamedCode('')
-    setPhase('正在重新生成...')
-
-    try {
-      const params: any = { prompt: formData.prompt, toolType: formData.toolType, style: formData.style }
-      params.retryContext = null
-      const { data: result } = await generateApi.generate(params)
-
-      if (result?.success && result.html) {
-        const lines = result.html.split('\n')
-        let acc = ''
-        for (const line of lines) { acc += line + '\n'; setStreamedCode(acc); await new Promise(r => setTimeout(r, 10)) }
-        setGenerated(result.html, result.title || formData.prompt.slice(0, 40))
-        setStep('preview')
-      } else {
-        Taro.showToast({ title: '重试失败', icon: 'none' })
-        setStep('input')
-      }
-    } catch {
-      Taro.showToast({ title: '生成服务暂不可用', icon: 'none', duration: 2000 })
-      setStep('input')
-    }
+    setStep('input')
+    setShowGate(false)
   }
 
+  // === 按反馈重新生成（保留前次输出上下文） ===
   async function handleGuidedRetry() {
-    if (!feedback.trim()) { Taro.showToast({ title: '请描述哪里不满意', icon: 'none' }); return }
+    if (!feedback.trim()) {
+      Taro.showToast({ title: '请先描述哪里不符合预期，再点重新生成', icon: 'none', duration: 2000 })
+      return
+    }
     setRetryContext({ previousOutput: generatedHtml, userFeedback: feedback })
     setStep('generating')
     setStreamedCode('')
@@ -319,8 +302,9 @@ export default function GeneratePage() {
       ) : (
         <View className="action-buttons">
           <View className="btn block" onClick={() => setShowGate(true)}><Text>下载到电脑</Text></View>
+
           <View className="retry-section">
-            <Text className="retry__label">不满意？重新生成不扣额度</Text>
+            <Text className="retry__label">不满意？描述哪里不符合预期，AI 在原基础上修复</Text>
             <Textarea
               className="retry__input"
               value={feedback}
@@ -328,18 +312,18 @@ export default function GeneratePage() {
               placeholder="告诉我哪里不符合预期，例如：功能不对、样式太简陋、需要增加导出按钮"
             />
             <View className="retry__btns">
-              {feedback.trim() ? (
-                <View className="btn btn--outline" onClick={handleGuidedRetry}><Text>按反馈重新生成</Text></View>
-              ) : (
-                <View className="btn btn--outline" onClick={handleRetry}><Text>直接重新生成</Text></View>
-              )}
+              <View className="btn btn--outline" onClick={handleGuidedRetry}><Text>按反馈重新生成</Text></View>
             </View>
+          </View>
+
+          <View className="start-new-section">
+            <View className="btn btn--ghost" onClick={handleStartNew}><Text>← 开始新的生成</Text></View>
           </View>
         </View>
       )}
 
       <View className="custom-note">
-        <Text>需要更复杂的功能？回到首页补充需求后重新生成。</Text>
+        <Text>需要更复杂功能？联系微信客服 zxdyzy365</Text>
       </View>
     </Layout>
   )

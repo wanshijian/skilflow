@@ -24,8 +24,8 @@ function buildPrompt(type, params) {
   const language = params.language || 'html';
 
   switch (type) {
-    case 'tool':
-      return `生成一个单文件 HTML 工具。需求：${prompt}。类型：${toolType}。风格：${style}。
+    case 'tool': {
+      let p = `生成一个单文件 HTML 工具。需求：${prompt}。类型：${toolType}。风格：${style}。
 
 输出要求：
 - 只输出完整的 HTML 文件，不要 markdown 包裹，不要解释
@@ -34,6 +34,20 @@ function buildPrompt(type, params) {
 - 移动端响应式，使用触摸事件
 - 中文界面
 - 专业的视觉效果`;
+
+      if (params.retryContext) {
+        p += `\n\n## 这是根据用户反馈的重新生成
+之前生成的 HTML（请在此基础上升级修改，不要完全推翻重做）：
+\`\`\`html
+${(params.retryContext.previousOutput || '').slice(0, 3000)}
+\`\`\`
+
+用户不满意的原因：${params.retryContext.userFeedback || '不符合预期'}
+
+请在上述代码基础上，根据用户的反馈针对性修改。保持原有的好功能，只修复/优化用户提到的问题。`;
+      }
+      return p;
+    }
 
     case 'app':
       return `生成一个 ${language} 应用。需求：${prompt}。

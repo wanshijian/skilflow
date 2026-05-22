@@ -102,9 +102,11 @@ html {
 }
 html, body, #app {
   min-height: 100%;
+  width: 100% !important;
+  max-width: 100% !important;
+  overflow-x: hidden;
   background: var(--color-bg);
 }
-#app { width: 100%; }
 // #endif
 
 @media (prefers-reduced-motion: reduce) {

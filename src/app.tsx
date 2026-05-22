@@ -18,6 +18,15 @@ function App({ children }: PropsWithChildren<object>) {
       sessionStorage.removeItem('sb-auth-hash')
       location.hash = saved.startsWith('#') ? saved : '#' + saved
     }
+
+    // 干掉 Taro 动态 font-size（桌面端限制在 750px 的元凶）
+    // Taro 注入的脚本会持续用 resize 改 html font-size，必须反复覆盖
+    const fixFontSize = () => {
+      document.documentElement.style.fontSize = '16px'
+    }
+    fixFontSize()
+    const id = setInterval(fixFontSize, 200)
+    setTimeout(() => clearInterval(id), 3000)
   }, [])
 
   return children

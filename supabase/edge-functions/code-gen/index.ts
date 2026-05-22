@@ -24,6 +24,33 @@ async function sha256(text: string): Promise<string> {
 }
 
 // 异步写日志（fire-and-forget，不阻塞生成请求）
+function makeSlug(title: string): string {
+  return title
+    .toLowerCase()
+    .replace(/[^a-z0-9一-鿿]+/g, '-')
+    .replace(/^-|-$/g, '')
+    .slice(0, 60) + '-' + Date.now().toString(36)
+}
+
+async function publishTool(supabase: any, params: {
+  title: string; prompt: string; toolType: string; style: string;
+  htmlCode: string; userId: string | null;
+}) {
+  try {
+    await supabase.from('tools').insert({
+      title: params.title,
+      slug: makeSlug(params.title),
+      description: params.prompt.slice(0, 200),
+      prompt: params.prompt,
+      tool_type: params.toolType,
+      style: params.style,
+      html_code: params.htmlCode,
+      user_id: params.userId || null,
+      status: 'published',
+    })
+  } catch (_) { /* 发布失败不影响主流程 */ }
+}
+
 async function logRequest(params: {
   userId?: string
   prompt: string
@@ -81,12 +108,24 @@ const SYSTEM_PROMPT = `You are an expert frontend engineer at SkillFlow. Generat
 - [ ] Has visual hierarchy and clear UI
 - [ ] No broken references or dead code`
 
+const CORS = {
+  'Content-Type': 'application/json',
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization, apikey, x-client-info',
+}
+
 serve(async (req: Request) => {
+  // Handle CORS preflight
+  if (req.method === 'OPTIONS') {
+    return new Response(null, { status: 204, headers: CORS })
+  }
+
   let logParams: any = null
 
   try {
     const { prompt, toolType, style, requirements, retryContext, language, userId } = await req.json()
-    if (!prompt) return new Response(JSON.stringify({ error: 'Missing prompt' }), { status: 400, headers: { 'Content-Type': 'application/json' } })
+    if (!prompt) return new Response(JSON.stringify({ error: 'Missing prompt' }), { status: 400, headers: CORS })
 
     const source = language ? 'app-factory' : 'generate'
 
@@ -155,7 +194,7 @@ serve(async (req: Request) => {
         const errMsg = claudeData.error?.message || 'Claude API error'
         logParams.errorMsg = errMsg
         logRequest(logParams)
-        return new Response(JSON.stringify({ error: errMsg }), { status: claudeRes.status, headers: { 'Content-Type': 'application/json' } })
+        return new Response(JSON.stringify({ error: errMsg }), { status: claudeRes.status, headers: CORS })
       }
 
       const rawText = claudeData.content?.[0]?.text || ''
@@ -170,18 +209,28 @@ serve(async (req: Request) => {
     // 标记成功并写日志
     if (result?.success) {
       logParams.success = true
+      // 自动发布到工具市场
+      const pubSupabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
+      publishTool(pubSupabase, {
+        title: result.title || prompt.slice(0, 50),
+        prompt: prompt.slice(0, 500),
+        toolType: toolType || 'utility',
+        style: style || 'clean',
+        htmlCode: result.html || '',
+        userId: userId || null,
+      })
     } else if (result?.error) {
       logParams.errorMsg = result.error
     }
     logRequest(logParams)
 
-    return new Response(JSON.stringify(result), { headers: { 'Content-Type': 'application/json' } })
+    return new Response(JSON.stringify(result), { headers: CORS })
 
   } catch (err) {
     if (logParams) {
       logParams.errorMsg = (err as Error).message
       logRequest(logParams)
     }
-    return new Response(JSON.stringify({ error: (err as Error).message }), { status: 500, headers: { 'Content-Type': 'application/json' } })
+    return new Response(JSON.stringify({ error: (err as Error).message }), { status: 500, headers: CORS })
   }
 })

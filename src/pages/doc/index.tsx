@@ -13,6 +13,7 @@ export default function DocPage() {
   const [result, setResult] = useState<{ title?: string; sections?: any[]; text?: string } | null>(null)
   const [showGate, setShowGate] = useState(false)
   const [docUsed, setDocUsed] = useState(0)
+  const [downloaded, setDownloaded] = useState(false)
 
   async function handleClean() {
     if (!text.trim()) {
@@ -27,20 +28,18 @@ export default function DocPage() {
 
     setProcessing(true)
     setResult(null)
+    setDownloaded(false)
 
     try {
-      // 优先调 Edge Function，失败则客户端兜底
       const { invokeEdgeFunction } = await import('../../utils/supabase')
       const data = await invokeEdgeFunction<{ title?: string; sections?: any[]; text?: string }>('doc-cleanup', { text, format })
       if (data && (data.text || data.sections)) {
         setResult(data)
       } else {
-        // Edge Function 不可用，客户端清洗兜底
         const cleaned = cleanText(text, format)
         setResult({ text: cleaned, title: extractTitle(cleaned) })
       }
     } catch {
-      // 网络失败也用客户端兜底
       const cleaned = cleanText(text, format)
       setResult({ text: cleaned, title: extractTitle(cleaned) })
     } finally {
@@ -62,11 +61,12 @@ export default function DocPage() {
     URL.revokeObjectURL(url)
     Taro.showToast({ title: '下载成功', icon: 'success' })
     setShowGate(false)
+    setDownloaded(true)
   }
 
   function handleShare() {
     Taro.setClipboardData({ data: typeof window !== 'undefined' ? window.location.href : '' })
-    Taro.showToast({ title: '链接已复制', icon: 'success' })
+    Taro.showToast({ title: '链接已复制，下载中...', icon: 'success' })
     setDocUsed(d => d + 1)
     downloadDocx()
   }
@@ -75,6 +75,13 @@ export default function DocPage() {
     Taro.showToast({ title: '支付开发中，当前可免费体验', icon: 'none', duration: 1500 })
     setDocUsed(d => d + 1)
     downloadDocx()
+  }
+
+  function handleReset() {
+    setText('')
+    setResult(null)
+    setShowGate(false)
+    setDownloaded(false)
   }
 
   return (
@@ -121,11 +128,10 @@ export default function DocPage() {
         </View>
       )}
 
-      {result && !showGate && (
+      {result && !showGate && !downloaded && (
         <View className="result-card">
           <View className="result-header">
             <Text className="result-label">预览</Text>
-            <Text className="result-copy" onClick={() => { Taro.setClipboardData({ data: result.text || '' }); Taro.showToast({ title: '已复制', icon: 'success' }) }}>复制</Text>
           </View>
           <View className="result-content">
             <Text className="result-text">{result.text?.slice(0, 3000)}{(result.text?.length || 0) > 3000 ? '\n\n...' : ''}</Text>
@@ -137,7 +143,23 @@ export default function DocPage() {
           </View>
           <View className="result-actions">
             <View className="btn block" onClick={() => setShowGate(true)}><Text>下载 Word 文档</Text></View>
-            <View className="btn btn--outline block" onClick={() => { setResult(null); setText(''); setShowGate(false) }}><Text>重新整理</Text></View>
+            <View className="btn btn--outline block" onClick={handleReset}><Text>重新整理</Text></View>
+          </View>
+        </View>
+      )}
+
+      {downloaded && (
+        <View className="result-card">
+          <View className="result-header">
+            <Text className="result-label">下载完成</Text>
+          </View>
+          <View className="result-content" style={{ textAlign: 'center', padding: '2rem 0' }}>
+            <Text className="result-text" style={{ fontSize: '1.1rem', color: 'var(--color-text)' }}>文档已保存到你的电脑</Text>
+          </View>
+          <View className="result-actions">
+            <View className="btn block btn--primary" onClick={handleReset}>
+              <Text>开始新任务</Text>
+            </View>
           </View>
         </View>
       )}

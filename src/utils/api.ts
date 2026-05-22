@@ -57,5 +57,44 @@ export const customRequestApi = {
   }
 }
 
+// 管理员工具管理
+export const adminApi = {
+  // 工具列表（含未发布）
+  async listTools(status?: string) {
+    let q = supabase.from('tools').select('*', { count: 'exact' }).order('created_at', { ascending: false })
+    if (status) q = q.eq('status', status)
+    return q.range(0, 49)
+  },
+  // 一键发布/上下架
+  async updateToolStatus(id: string, status: string) {
+    return supabase.from('tools').update({ status }).eq('id', id)
+  },
+  // 设为精品 + 定价
+  async setPremium(id: string, price: number) {
+    return supabase.from('tools').update({ is_premium: true, premium_price: price, status: 'published' }).eq('id', id)
+  },
+  // 取消精品
+  async unsetPremium(id: string) {
+    return supabase.from('tools').update({ is_premium: false, premium_price: null }).eq('id', id)
+  },
+  // 统计
+  async getStats() {
+    const [toolsCount, usersCount, downloadsCount] = await Promise.all([
+      supabase.from('tools').select('id', { count: 'exact', head: true }),
+      supabase.from('users').select('id', { count: 'exact', head: true }),
+      supabase.from('downloads').select('id', { count: 'exact', head: true }),
+    ])
+    return {
+      tools: (toolsCount as any).count || 0,
+      users: (usersCount as any).count || 0,
+      downloads: (downloadsCount as any).count || 0,
+    }
+  },
+  // 高频需求
+  async getTopDemands(limit = 20) {
+    return supabase.rpc('get_top_demands', { limit_count: limit })
+  },
+}
+
 // 开发模式用户
 export { devMode }
