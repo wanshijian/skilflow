@@ -118,9 +118,17 @@ export default function DocPage() {
         </View>
       </View>
 
-      <View className={`clean-btn ${processing ? 'clean-btn--loading' : ''}`} onClick={handleClean}>
-        <Text className="clean-btn__text">{processing ? '正在整理...' : '开始整理'}</Text>
-      </View>
+      {!result && !showGate && !downloaded && (
+        <View className={`clean-btn ${processing ? 'clean-btn--loading' : ''}`} onClick={handleClean}>
+          <Text className="clean-btn__text">{processing ? '正在整理...' : '开始整理'}</Text>
+        </View>
+      )}
+
+      {showGate && !downloaded && (
+        <View className="clean-btn clean-btn--disabled">
+          <Text className="clean-btn__text">请选择下载方式</Text>
+        </View>
+      )}
 
       {processing && (
         <View className="progress">
