@@ -9,6 +9,7 @@ import './index.scss'
 
 const CATEGORIES = [
   { key: '', label: '全部' },
+  { key: 'premium', label: '精品' },
   { key: 'utility', label: '实用工具' },
   { key: 'converter', label: '格式转换' },
   { key: 'game', label: '小游戏' },
@@ -28,7 +29,13 @@ export default function MarketPage() {
 
   async function loadTools() {
     setLoading(true)
-    const { data } = await toolsApi.list({ toolType: category || undefined, sort })
+    const params: any = { sort }
+    if (category === 'premium') {
+      params.premium = true
+    } else if (category) {
+      params.toolType = category
+    }
+    const { data } = await toolsApi.list(params)
     if (data) setTools(data)
     setLoading(false)
   }
@@ -70,7 +77,11 @@ export default function MarketPage() {
 
       <ScrollView className="cat-bar" scrollX showScrollbar={false}>
         {CATEGORIES.map(c => (
-          <Text key={c.key} className={`cat-item ${category === c.key ? 'cat-item--active' : ''}`} onClick={() => setCategory(c.key)}>
+          <Text
+            key={c.key}
+            className={`cat-item ${category === c.key ? 'cat-item--active' : ''} ${c.key === 'premium' ? 'cat-item--premium' : ''}`}
+            onClick={() => setCategory(c.key)}
+          >
             {c.label}
           </Text>
         ))}

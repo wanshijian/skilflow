@@ -6,7 +6,6 @@ const NAV = [
   { label: '生成', path: '/pages/index/index' },
   { label: '文档', path: '/pages/doc/index' },
   { label: '市场', path: '/pages/market/index' },
-  { label: '精品', path: '/pages/premium/index' },
   { label: '我的', path: '/pages/my/index' },
 ]
 
