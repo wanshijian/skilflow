@@ -124,12 +124,6 @@ export default function DocPage() {
         </View>
       )}
 
-      {showGate && !downloaded && (
-        <View className="clean-btn clean-btn--disabled">
-          <Text className="clean-btn__text">请选择下载方式</Text>
-        </View>
-      )}
-
       {processing && (
         <View className="progress">
           <Text className="progress__text">分析结构、清洗符号、整理排版中...</Text>
@@ -174,11 +168,20 @@ export default function DocPage() {
 
       {showGate && (
         <View className="gate-card">
-          <Text className="gate-title">{docUsed === 0 ? '第 1 次完全免费' : '下载这份文档'}</Text>
-          <Text className="gate-desc">{docUsed === 0 ? '首次免费，点击下方按钮直接下载。' : '第 2 次起可分享免费下载，或付费 1.99 元。'}</Text>
-          <View className="gate__btn gate__btn--share" onClick={handleShare}><Text className="gate__btn-text">分享后免费下载</Text></View>
-          <View className="gate__divider"><Text>或</Text></View>
-          <View className="gate__btn gate__btn--pay" onClick={handlePay}><Text className="gate__btn-text">¥1.99 直接下载</Text></View>
+          <Text className="gate-title">下载 Word 文档</Text>
+          {docUsed === 0 ? (
+            <View>
+              <Text className="gate-desc">第 1 次完全免费</Text>
+              <View className="gate__btn gate__btn--share" onClick={handleShare}><Text className="gate__btn-text">免费下载</Text></View>
+            </View>
+          ) : (
+            <View>
+              <Text className="gate-desc">分享或付费，文档即可下载到本地。</Text>
+              <View className="gate__btn gate__btn--share" onClick={handleShare}><Text className="gate__btn-text">分享后免费下载</Text></View>
+              <View className="gate__divider"><Text>或</Text></View>
+              <View className="gate__btn gate__btn--pay" onClick={handlePay}><Text className="gate__btn-text">¥1.99 直接下载</Text></View>
+            </View>
+          )}
         </View>
       )}
 
