@@ -11,6 +11,8 @@
 @media (min-width: 768px) {
   .layout {
     &__content {
+      max-width: 768px;
+      margin: 0 auto;
       padding: var(--sp-12) var(--sp-10) var(--sp-16);
     }
   }
@@ -19,6 +21,8 @@
 @media (min-width: 1600px) {
   .layout {
     &__content {
+      max-width: 768px;
+      margin: 0 auto;
       padding: var(--sp-16) var(--sp-16) var(--sp-16);
     }
   }
