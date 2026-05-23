@@ -47,4 +47,16 @@
     .tool-grid { grid-template-columns: repeat(3, 1fr); gap: var(--sp-4); }
   }
 }
+
+@media (min-width: 1200px) {
+  .market-page {
+    .tool-grid { grid-template-columns: repeat(4, 1fr); }
+  }
+}
+
+@media (min-width: 1600px) {
+  .market-page {
+    .tool-grid { grid-template-columns: repeat(5, 1fr); }
+  }
+}
 // #endif
