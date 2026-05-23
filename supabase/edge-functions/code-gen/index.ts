@@ -11,6 +11,23 @@ const SERVICE_API_KEY = Deno.env.get('SERVICE_API_KEY') || 'dev-key'
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
 
+// 从 prompt 自动识别工具类型（用户常忘记改默认类型）
+function detectToolType(prompt: string, userType: string): string {
+  const p = prompt.toLowerCase()
+  // 游戏类
+  if (/游戏|贪吃蛇|2048|扫雷|俄罗斯方块|消消乐|弹球|打砖块|贪吃|射击|迷宫|棋|牌|扑克|麻将|骰子/.test(p)) return 'game'
+  // 转换类
+  if (/转换|转.*pdf|转.*word|转.*格式|压缩|解压|编码|解码|加密|解密|json.*csv|csv.*json|word.*pdf|pdf.*word|图片.*转|格式化成/.test(p)) return 'converter'
+  // 生成器类
+  if (/生成|二维码|qr.?code|uuid|密码|随机|抽签|摇号|取名|起名|占卜/.test(p)) return 'generator'
+  // 计算器类
+  if (/计算|换算|汇率|bmi|利率|房贷|分期|税费|折扣|百分比/.test(p)) return 'calculator'
+  // 文本工具类
+  if (/文本|文字|markdown|正则|编辑|笔记|日记|备忘|待办|todo|记事本|写作|排版|校对|字数|统计|diff|对比/.test(p)) return 'text-tool'
+  // 保持用户选择的类型
+  return userType || 'utility'
+}
+
 // 规范化 prompt 用于聚合：去空白 + 小写
 function normalizePrompt(p: string): string {
   return p.replace(/\s+/g, '').toLowerCase().slice(0, 200)
@@ -211,10 +228,11 @@ serve(async (req: Request) => {
       logParams.success = true
       // 自动发布到工具市场
       const pubSupabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
+      const detectedType = detectToolType(prompt, toolType || 'utility')
       publishTool(pubSupabase, {
         title: result.title || prompt.slice(0, 50),
         prompt: prompt.slice(0, 500),
-        toolType: toolType || 'utility',
+        toolType: detectedType,
         style: style || 'clean',
         htmlCode: result.html || '',
         userId: userId || null,
