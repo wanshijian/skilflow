@@ -63,7 +63,7 @@
   .preview-kicker { display: block; margin-bottom: var(--sp-1); color: var(--color-green); font-size: var(--text-xs); font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; }
   .preview-title  { display: block; color: var(--color-text); font-size: var(--text-2xl); font-weight: 800; letter-spacing: -0.02em; line-height: 1.2; }
   .quota-pill { flex: 0 0 auto; padding: 6px var(--sp-3); border: 1px solid var(--color-accent-border); border-radius: var(--radius-full); background: var(--color-accent-light); color: var(--color-accent); font-size: var(--text-xs); font-weight: 800; }
-  .preview-frame { overflow: hidden; min-height: 420px; margin-bottom: var(--sp-4); border: 1px solid var(--color-border); border-radius: var(--radius-lg); background: var(--color-surface); box-shadow: var(--shadow-card); }
+  .preview-frame { overflow: auto; -webkit-overflow-scrolling: touch; min-height: 420px; max-height: 70vh; margin-bottom: var(--sp-4); border: 1px solid var(--color-border); border-radius: var(--radius-lg); background: var(--color-surface); box-shadow: var(--shadow-card); }
 
   // Code
   .code-section { padding: var(--sp-4); margin-bottom: var(--sp-4); border: 1px solid var(--color-border); border-radius: var(--radius-lg); background: var(--color-surface); }

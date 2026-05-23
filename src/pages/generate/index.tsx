@@ -276,7 +276,7 @@ export default function GeneratePage() {
 
       <View className="preview-frame">
         {/* #ifdef H5 */}
-        <iframe srcDoc={generatedHtml} style={{ width: '100%', height: '420px', border: 'none' }} sandbox="allow-scripts allow-same-origin allow-forms" />
+        <iframe srcDoc={generatedHtml} style={{ width: '100%', minHeight: '480px', border: 'none', display: 'block' }} sandbox="allow-scripts allow-same-origin allow-forms" scrolling="yes" />
         {/* #endif */}
       </View>
 

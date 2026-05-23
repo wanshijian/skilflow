@@ -11,19 +11,19 @@
 @media (min-width: 768px) {
   .layout {
     &__content {
-      max-width: 768px;
+      max-width: 960px;
       margin: 0 auto;
       padding: var(--sp-12) var(--sp-10) var(--sp-16);
     }
   }
 }
 
-@media (min-width: 1600px) {
+@media (min-width: 1400px) {
   .layout {
     &__content {
-      max-width: 768px;
+      max-width: 1100px;
       margin: 0 auto;
-      padding: var(--sp-16) var(--sp-16) var(--sp-16);
+      padding: var(--sp-12) var(--sp-16) var(--sp-16);
     }
   }
 }
