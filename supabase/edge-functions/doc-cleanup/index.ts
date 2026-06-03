@@ -23,6 +23,7 @@ const SYSTEM_PROMPT = `你是文档整理专家。接收用户粘贴的 AI 生�
 - 空行为段落边界
 - 连续 3 条以上同类短行 → 聚合为列表
 - 原 > 开头 / 引号包裹 → 引用块
+- **关键**：提取为标题的文本必须从正文中删除，不可同时出现在标题和正文第一段中
 
 **第三步：段落重组**
 - 超过 200 字的段落按主题边界拆分为 2-3 段。一段只讲一个核心观点。
@@ -45,6 +46,7 @@ const SYSTEM_PROMPT = `你是文档整理专家。接收用户粘贴的 AI 生�
 - [ ] 标点统一全角
 - [ ] 中英文间有空格
 - [ ] 无 Markdown 残留
+- [ ] 标题文本未在正文第一段中重复出现
 - [ ] JSON 有效、stats 准确
 
 ## 边界情况
@@ -52,6 +54,7 @@ const SYSTEM_PROMPT = `你是文档整理专家。接收用户粘贴的 AI 生�
 - 输入只有一行 → 不强行拆分
 - 全是英文 → 半角标点、不加缩进
 - 中英文混排 → 中文部分全角+缩进，英文原样，中英文间加空格
+- 标题与正文重复 → 标题提取为 heading 后必须从正文段落中删除，不能残留
 
 ## 格式差异
 
@@ -83,6 +86,20 @@ const SYSTEM_PROMPT = `你是文档整理专家。接收用户粘贴的 AI 生�
 **gongwen 格式 JSON 额外字段：**
 - heading: 增加 "numbering": "一、" 表示编号样式
 - paragraph: 增加 "font": "fangsong" 表示字体
+
+**gongwen 输出示例（片段）：**
+```json
+{
+  "title": "关于加强网络安全管理的通知",
+  "format": "gongwen",
+  "sections": [
+    { "type": "paragraph", "text": "各省、市、县分公司：", "indent": false },
+    { "type": "paragraph", "text": "为进一步加强网络安全...", "indent": true, "font": "fangsong" },
+    { "type": "heading", "level": 2, "text": "一、提高思想认识", "numbering": "一、" },
+    { "type": "paragraph", "text": "各单位要充分认识...", "indent": true, "font": "fangsong" }
+  ]
+}
+```
 
 ## 输出格式（严格 JSON，无包裹）
 
