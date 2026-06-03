@@ -1,86 +1,274 @@
 ---
 name: doc-cleanup
-description: Clean and format AI-generated text into structured documents. Use when asked to 整理文档, clean Markdown, or format text for export.
+description: 文档整理规范 — 6 步法将散乱 AI 文本重构为层次分明、段落清晰、阅读流畅的专业文档
+metadata:
+  type: skill
+  layer: 2
+  category: task
+  triggers:
+    - "整理"
+    - "清洗"
+    - "排版"
+    - "格式化"
+    - format 参数
+    - "doc-cleanup"
+    - "公文"
+    - "公文格式"
+    - "党政机关"
+  output: 严格 JSON（无 markdown 包裹）
+  formats: normal, gongwen, wechat
 ---
 
-# Document Cleanup
+# Document Cleanup — 文档整理规范
 
-Clean AI-generated text by removing Markdown artifacts and restructuring into well-formatted documents ready for Word export.
+你不是在简单删符号——你是在把一篇**结构混乱、格式杂乱**的原始文本重构成**层次分明、段落清晰、阅读流畅**的专业文档。每一个处理决策都应服务于「让读者看得下去」。
 
-## Workflow
+好文档的三要素：**清晰的层次 + 合理的段落 + 统一的规范**。
 
-### Step 1: Clean Markdown
+---
 
-Remove all formatting symbols while preserving content:
-- `##`, `###` → remove, keep heading text
-- `**bold**` → remove `**`, keep text
-- `*italic*` → remove `*`, keep text
-- `- item`, `* item`, `+ item` → remove markers
-- `> quote` → remove `>`
-- `` `code` `` → remove backticks
-- ` ```blocks``` ` → remove fences
-- Curly quotes `"" ''` → straight quotes
-- Zero-width characters and control chars → remove
-- Normalize multiple blank lines
+## 处理流程（6 步法）
 
-### Step 2: Identify Structure
+按顺序执行，每步对下一步负责。
 
-Semantically analyze the cleaned text:
-- **Title**: Usually the first non-empty line or the most prominent short sentence
-- **Headings**: Lines that semantically introduce a new topic section (not just short lines)
-- **Paragraphs**: Body text, merge overly short adjacent paragraphs
-- **Lists**: Consecutive items that form a natural list
+### 第一步：符号清洗
 
-### Step 3: Format for Output
+去掉所有 Markdown/格式化残留，还原纯文本：
 
-Layout rules:
-- Title: centered, prominent
-- Headings: slightly larger, bold
-- Paragraphs: first-line indent, 1.8 line height, 6px paragraph spacing
-- Lists: bullet points with proper indentation
+| 类别 | 去除目标 | 示例 |
+|---|---|---|
+| 标题符号 | `##`、`###`、`####` 等 ATX 标记 | `## 概述` → `概述` |
+| 强调符号 | `**`、`__`、`*`、`_` | `**重点**` → `重点` |
+| 列表符号 | 行首的 `-`、`*`、`+`、`1.` | `- 项目` → `项目` |
+| 代码符号 | `` ` ``、` ``` ` | 直接移除 |
+| 引用符号 | `>` | `> 引文` → `引文` |
+| 链接语法 | `[text](url)` → 保留 text | `[链接](http://x)` → `链接` |
+| 分隔线 | `---`、`***`、`___` | 替换为空行 |
+| 特殊字符 | 弯引号 `""''` → 直引号 `""`，零宽字符，不可见控制字符 | 全部移除 |
+| 多余空白 | 连续 3+ 换行 → 2 换行，行尾空格 | 压缩 |
 
-## Output Format
+### 第二步：结构识别
 
-Output STRICT JSON only — no markdown wrapping, no explanation:
+从清洗后的纯文本中重建文档骨架：
+
+**标题识别：**
+- 参考原 Markdown 层级（`##` → H2, `###` → H3）
+- 无 Markdown 时：短句（≤30 字）+ 无句末标点 + 独立成行 → 疑似标题
+- 中文数字开头（"一、"、"1."）+ 短句 → 可能是标题
+- **层级规则**：只有一个 H1（文档主标题），H2→H3→H4 逐级递进，**绝不跳级**
+
+**段落识别：**
+- 空行为天然段落边界
+- 连续文本行合并为同一段落
+
+**列表识别：**
+- 连续 3 条以上同类短行（原 `-`/`*`/`1.` 开头）→ 聚合为列表
+- 引导句（以冒号结尾的段落）+ 紧跟的缩进短行 → 引导句 + 列表
+
+**引用识别：**
+- 原 `>` 开头的内容 → 引用块
+- 缩进 + 引号包裹的段落 → 引用块
+- 「某某说/指出/认为」+ 引号内容 → 引用块
+
+### 第三步：段落重组
+
+这是文档整理的**核心步骤**，直接影响可读性：
+
+- **拆分过长段落**：超过 200 字的段落检查是否包含多个主题，按主题边界拆为 2-3 段。一个段落只讲一个核心观点
+- **合并过碎段落**：连续 2+ 个不足 30 字的段落（且非标题/列表），主题相同则合并。不要每句话都单独成段
+- **目标段落长度**：中文 80-200 字/段，屏幕阅读最舒适
+- **主题聚集**：相关内容靠近。如发现同一主题的段落分散，重组顺序（遵守亲密性原则）
+
+### 第四步：排版规范
+
+对每种元素类型应用排版规则：
+
+**标题：**
+- H1 文档标题：居中，加粗
+- H2 章节标题：左对齐或居中，加粗
+- H3 小节标题：左对齐，加粗
+- 标题与上一段间距 > 标题与下一段间距（亲密性：标题靠近它所属内容）
+
+**正文段落：**
+- 首行缩进 2 字符（中文传统）**或** 段间距留白（现代屏幕阅读），**严格二选一**
+- 左对齐，不用两端对齐
+- 段间距均匀，约为行距的 1.5-2 倍
+
+**列表：**
+- 前应有引导句（冒号结尾）
+- 无序列表：并列项
+- 有序列表：步骤/序列/排名
+- 每项长度尽量接近，避免 3 字与 300 字混排
+- 列表项内部不再嵌套复杂结构
+
+**引用块：**
+- 加缩进或左侧竖线标识
+- 保留出处信息（如有）
+
+### 第五步：标点与细节统一
+
+- **全角标点**：中文内容用全角（，。！？：；""''），英文/数字用半角
+- **中英文空格**：中文与英文/数字之间加空格——「使用 React 构建」而非「使用React构建」
+- **不过度强调**：加粗仅用于关键词/核心概念，全文加粗占比 ≤5%。满篇强调等于没有强调
+- **统一格式**：日期、数字格式全篇一致
+
+### 第六步：质量校验
+
+逐项检查（任一不通过则修正）：
+
+- [ ] 标题层级正确（不跳级、无同级重复）
+- [ ] 段落长度适中（无超长墙文、无碎片短句堆）
+- [ ] 相关主题聚集在一起
+- [ ] 标点符号统一为全角中文标点
+- [ ] 中英文/数字之间有空格
+- [ ] 无 Markdown 符号残留
+- [ ] 无连续多余空行（不超过 2 个）
+- [ ] 整体阅读节奏流畅自然
+- [ ] JSON 结构有效、stats 数据准确
+
+---
+
+## 输出格式（严格 JSON，无包裹）
 
 ```json
 {
   "title": "文档标题",
   "format": "normal",
   "sections": [
-    { "type": "paragraph", "text": "正文段落内容..." },
-    { "type": "heading", "level": 1, "text": "一级标题" },
-    { "type": "heading", "level": 2, "text": "二级标题" },
-    { "type": "list", "items": ["第一项", "第二项", "第三项"] }
+    { "type": "heading", "level": 1, "text": "主标题" },
+    { "type": "paragraph", "text": "正文段落...", "indent": true },
+    { "type": "heading", "level": 2, "text": "章节标题" },
+    { "type": "paragraph", "text": "正文段落...", "indent": true },
+    { "type": "list", "ordered": false, "items": ["项目一", "项目二"] },
+    { "type": "quote", "text": "引用文字...", "source": "出处（可选）" }
   ],
-  "stats": {
-    "chars": 1234,
-    "paragraphs": 8,
-    "headings": 2
-  }
+  "stats": { "chars": 1234, "paragraphs": 8, "headings": 2, "lists": 1 }
 }
 ```
 
-## Format Presets
+### 字段说明
 
-| Format | Target | Special Rules |
-|---|---|---|
-| normal | General document | Standard cleaning rules |
-| gongwen | Official Chinese document | Formal tone, strict paragraph structure |
-| wechat | WeChat public account | Short paragraphs, emoji-friendly, no indent |
+| 字段 | 类型 | 必需 | 说明 |
+|---|---|---|---|
+| `type` | string | 是 | `heading` / `paragraph` / `list` / `quote` |
+| `text` | string | 是 | 文本内容 |
+| `level` | number | heading | 标题层级 1-4，1=文档主标题 |
+| `indent` | boolean | 否 | 段落是否首行缩进，默认 true |
+| `ordered` | boolean | 否 | 列表是否有序，默认 false |
+| `items` | string[] | list | 列表项数组 |
+| `source` | string | 否 | 引文出处 |
 
-## Edge Cases
+### stats 字段
 
-- **Very short text** (< 50 chars): Return as single paragraph, infer title from content
-- **No clear title**: Use first 20 chars as title
-- **Purely code blocks**: Treat as plain text, remove fences
-- **Mixed Chinese/English**: Preserve original language, don't translate
-- **Tables in markdown**: Convert to readable paragraph format
+| 字段 | 说明 |
+|---|---|
+| `chars` | 正文总字符数（不含标题） |
+| `paragraphs` | 段落数量 |
+| `headings` | 标题数量 |
+| `lists` | 列表数量 |
 
-## What NOT to Do
+---
 
-- Don't add content or commentary
-- Don't change the meaning of text
-- Don't remove meaningful content (only symbols/formatting)
-- Don't output markdown — output bare JSON
-- Don't translate or rewrite
+## 格式预设
+
+### normal — 普通文档
+
+| 属性 | 规范 |
+|---|---|
+| 缩进 | 首行缩进 2 字符 |
+| 标题对齐 | H1 居中 / H2 左对齐 |
+| 行距 | 1.75 倍 |
+| 字体 | 系统默认（无特殊要求） |
+| 适用 | 通用文章、报告、笔记 |
+
+### gongwen — 公文格式 (GB/T 9704-2012)
+
+依据《党政机关公文格式》国家标准（GB/T 9704—2012），公文格式的核心特征是**严格的标题编号体系 + 差异化字体 + 固定行距**。
+
+#### 页面参数
+
+- 纸张：A4
+- 上边距 3.7cm，下边距 3.5cm，左边距 2.8cm，右边距 2.6cm
+- 每页 22 行，每行 28 字
+
+#### 标题与正文规范
+
+| 元素 | 字体 | 字号 | 加粗 | 编号格式 | 行距 |
+|---|---|---|---|---|---|
+| 公文标题 | 方正小标宋简体 | 二号(22pt) | **不加粗** | 无编号 | 35.45磅(固定值) |
+| 一级标题 | 黑体 | 三号(16pt) | **不加粗** | `一、` `二、` `三、` | 29.45磅 |
+| 二级标题 | 楷体GB-2312 | 三号(16pt) | **加粗** | `（一）` `（二）` | 29.45磅 |
+| 三级标题 | 仿宋GB-2312 | 三号(16pt) | **加粗** | `1.` `2.`（英文句号，不用顿号） | 29.45磅 |
+| 四级标题 | 仿宋GB-2312 | 三号(16pt) | 不加粗 | `（1）` `（2）` | 29.45磅 |
+| 正文 | 仿宋GB-2312 | 三号(16pt) | 不加粗 | — | 29.45磅(固定值) |
+
+#### 关键规则
+
+1. **标题编号体系严格**：一级 `一、` → 二级 `（一）` → 三级 `1.` → 四级 `（1）`。不跳级、不混用。
+2. **三级标题用 `1.` 不是 `1、`**——这是公文格式中极容易出错的点。
+3. **公文标题不加粗**——与普通文档不同，公文标题用方正小标宋简体二号字，居中对齐，不加粗。
+4. **一级标题不加粗**——黑体三号字本身已足够醒目，不加粗。
+5. **数字用 Times New Roman**——正文中的阿拉伯数字使用 Times New Roman 字体，三号。
+6. **正文首行缩进 2 字符**，左对齐。
+7. **附件**：正文下空一行左空二字编排"附件"二字 + 全角冒号 + 附件名。多个附件用 `1.` `2.` 标注。
+8. **字体缺失处理**：当方正小标宋简体不可用时→宋体二号；仿宋GB-2312 不可用时→仿宋三号；楷体GB-2312 不可用时→楷体三号。
+
+#### 识别要点
+
+处理公文文本时，根据编号模式推断标题层级：
+
+```
+"一、二三、四五六、" → 一级标题 (黑体不加粗)
+"（一）（二）（三）" → 二级标题 (楷体加粗)
+"1. 2. 3." → 三级标题 (仿宋加粗)
+"（1）（2）（3）" → 四级标题 (仿宋不加粗)
+```
+
+#### JSON 输出要求
+
+gongwen 格式下，每个 heading 需额外标注 `numbering` 字段表示编号样式：
+
+```json
+{ "type": "heading", "level": 2, "text": "一、工作目标", "numbering": "一、" }
+```
+
+paragraph 需额外标注字体信息（供前端渲染）：
+
+```json
+{ "type": "paragraph", "text": "...", "indent": true, "font": "fangsong" }
+```
+
+### wechat — 公众号稿（待实现）
+
+| 属性 | 规范 |
+|---|---|
+| 缩进 | 段间距留白 |
+| 标题对齐 | H1/H2 居中 |
+| 行距 | 1.5 倍 |
+| 适用 | 微信公众号、社交媒体长文 |
+
+---
+
+## 边界情况处理
+
+| 情况 | 处理方式 |
+|---|---|
+| 输入为空 | 返回 `{"title":"未命名文档","sections":[],"stats":{"chars":0,"paragraphs":0,"headings":0,"lists":0}}` |
+| 输入只有一行 | 判断为纯段落，不强行拆分 |
+| 输入全是英文 | 标点用半角、不加首行缩进、段落间留白 |
+| 中英文严重混排 | 中文部分用全角标点 + 缩进，英文部分保持原样，中英文间加空格 |
+| 嵌套列表 | 扁平化为一级列表，通过 `ordered` 区分 |
+| 代码块残留 | 如果内容明显是代码（连续多行缩进/特殊符号密集），转为普通段落保留原格式 |
+| Markdown 表格 | 转为列表，表头作为引导句 |
+
+---
+
+## 与 SkillFlow 项目的集成
+
+此 skill 同时服务于三个执行环境：
+
+1. **Claude Code CLI** — 直接读取本文件作为系统指令
+2. **VPS code-gen-service** — 从 Supabase `ai_skills` 表读取（内容镜像本文件）
+3. **Edge Function fallback** — 硬编码 `SYSTEM_PROMPT`（精简镜像）
+
+修改规范时，**以此文件为源**，同步更新 DB 和 Edge Function。

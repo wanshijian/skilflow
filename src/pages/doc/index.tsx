@@ -49,7 +49,7 @@ export default function DocPage() {
 
   function downloadDocx() {
     if (!result?.text) return
-    const htmlContent = generateHTML(result)
+    const htmlContent = generateHTML(result, format)
     const blob = new Blob([htmlContent], { type: 'application/msword' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
@@ -96,8 +96,8 @@ export default function DocPage() {
         <View className={`format-opt ${format === 'normal' ? 'format-opt--active' : ''}`} onClick={() => setFormat('normal')}>
           <Text>普通文档</Text>
         </View>
-        <View className="format-opt format-opt--soon">
-          <Text>公文格式<Text className="soon-tag">即将上线</Text></Text>
+        <View className={`format-opt ${format === 'gongwen' ? 'format-opt--active' : ''}`} onClick={() => setFormat('gongwen')}>
+          <Text>公文格式</Text>
         </View>
         <View className="format-opt format-opt--soon">
           <Text>公众号稿<Text className="soon-tag">即将上线</Text></Text>
@@ -216,19 +216,46 @@ function extractTitle(text: string): string {
   return lines[0]?.slice(0, 50) || '文档'
 }
 
-function generateHTML(result: { title?: string; text?: string }): string {
+function generateHTML(result: { title?: string; text?: string }, format: string): string {
   const title = result.title || '文档'
+  const isGongwen = format === 'gongwen'
+
   const body = (result.text || '').split('\n').map(line => {
     const trimmed = line.trim()
     if (!trimmed) return '<br>'
+
+    // 公文格式下的标题识别（按编号模式）
+    if (isGongwen) {
+      if (/^[一二三四五六七八九十]+、/.test(trimmed) && trimmed.length < 80)
+        return `<h2 style="font-family:SimHei,黑体,sans-serif;font-size:16pt;font-weight:normal;margin:10px 0;line-height:29.45pt">${trimmed}</h2>`
+      if (/^（[一二三四五六七八九十\d]+）/.test(trimmed) && trimmed.length < 80)
+        return `<h3 style="font-family:KaiTi,楷体,STKaiti,serif;font-size:16pt;font-weight:bold;margin:8px 0;line-height:29.45pt">${trimmed}</h3>`
+      if (/^\d+\./.test(trimmed) && trimmed.length < 80 && !/^\d+\.\d+/.test(trimmed))
+        return `<h4 style="font-family:FangSong,仿宋,STFangsong,serif;font-size:16pt;font-weight:bold;margin:6px 0;line-height:29.45pt">${trimmed}</h4>`
+    }
+
+    // 普通格式下的标题识别
     if (/^[一二三四五六七八九十]/.test(trimmed) && trimmed.length < 30) return `<h2>${trimmed}</h2>`
     if (trimmed.endsWith('：') && trimmed.length < 30) return `<h3>${trimmed}</h3>`
+
+    // 正文段落
+    if (isGongwen) {
+      return `<p style="font-family:FangSong,仿宋,STFangsong,serif;font-size:16pt;text-indent:2em;margin:0;line-height:29.45pt">${trimmed}</p>`
+    }
     return `<p style="text-indent:2em;margin:6px 0;line-height:1.8">${trimmed}</p>`
   }).join('\n')
+
+  // 公文格式的标题样式
+  const titleStyle = isGongwen
+    ? 'font-family:FZXiaoBiaoSong-B05S,宋体,SimSun,serif;font-size:22pt;font-weight:normal;line-height:35.45pt'
+    : 'font-size:18pt;font-weight:bold'
+  const bodyStyle = isGongwen
+    ? 'style="font-family:FangSong,仿宋,STFangsong,serif;font-size:16pt"'
+    : ''
 
   return `<html xmlns:o="urn:schemas-microsoft-com:office:office"
   xmlns:w="urn:schemas-microsoft-com:office:word"
   xmlns="http://www.w3.org/TR/REC-html40">
   <head><meta charset="utf-8"><title>${title}</title></head>
-  <body><h1 style="text-align:center;font-size:18pt;font-weight:bold">${title}</h1>${body}</body></html>`
+  <body${bodyStyle ? ' ' + bodyStyle : ''}><h1 style="text-align:center;${titleStyle}">${title}</h1>${body}</body></html>`
 }
