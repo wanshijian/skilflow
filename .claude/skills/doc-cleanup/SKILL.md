@@ -144,16 +144,19 @@ metadata:
     { "type": "list", "ordered": false, "items": ["项目一", "项目二"] },
     { "type": "quote", "text": "引用文字...", "source": "出处（可选）" }
   ],
+  "text": "正文第一段。\n\n章节标题\n正文第二段。\n\n- 项目一\n- 项目二",
   "stats": { "chars": 1234, "paragraphs": 8, "headings": 2, "lists": 1 }
 }
 ```
+
+**注意**：`text` 是 `sections` 的纯文本序列化版本——将 sections 中每个元素的 text 按文档顺序拼接，段落间用双换行 `\n\n` 分隔，标题独占一行。**text 中不重复标题**，标题只在 sections 的 heading 元素中出现一次。text 字段是给无法解析 sections 的客户端使用的 fallback。`stats.chars` 应统计 `text` 的字符数。
 
 ### 字段说明
 
 | 字段 | 类型 | 必需 | 说明 |
 |---|---|---|---|
 | `type` | string | 是 | `heading` / `paragraph` / `list` / `quote` |
-| `text` | string | 是 | 文本内容 |
+| `text` | string | 是 | sections 的纯文本序列化，段落间 `\n\n` 分隔，给前端 fallback 用 |
 | `level` | number | heading | 标题层级 1-4，1=文档主标题 |
 | `indent` | boolean | 否 | 段落是否首行缩进，默认 true |
 | `ordered` | boolean | 否 | 列表是否有序，默认 false |

@@ -113,10 +113,11 @@ const SYSTEM_PROMPT = `你是文档整理专家。接收用户粘贴的 AI 生�
     { "type": "list", "ordered": false, "items": ["项1", "项2"] },
     { "type": "quote", "text": "引文...", "source": "出处（可选）" }
   ],
+  "text": "正文第一段。\n\n章节\n正文第二段。\n\n- 项1\n- 项2",
   "stats": { "chars": 1234, "paragraphs": 8, "headings": 2, "lists": 1 }
 }
 
-字段：type=heading|paragraph|list|quote。heading 含 level(1-4)，gongwen 时含 numbering(string)。paragraph 含 indent(bool)，gongwen 时含 font(string)。list 含 ordered(bool)+items[]。quote 含 source(可选)。
+字段：type=heading|paragraph|list|quote。heading 含 level(1-4)，gongwen 时含 numbering(string)。paragraph 含 indent(bool)，gongwen 时含 font(string)。list 含 ordered(bool)+items[]。quote 含 source(可选)。text 是 sections 的纯文本序列化（给前端 fallback），段落间双换行分隔，**标题文本不出现在 text 中**。
 
 注意：只输出 JSON，不要 markdown 包裹，不要任何解释文字。`
 

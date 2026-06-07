@@ -48,7 +48,7 @@ export default function DocPage() {
   }
 
   function downloadDocx() {
-    if (!result?.text) return
+    if (!result || (!result.text && !result.sections)) return
     const htmlContent = generateHTML(result, format)
     const blob = new Blob([htmlContent], { type: 'application/msword' })
     const url = URL.createObjectURL(blob)
@@ -136,11 +136,11 @@ export default function DocPage() {
             <Text className="result-label">预览</Text>
           </View>
           <View className="result-content">
-            <Text className="result-text">{result.text?.slice(0, 3000)}{(result.text?.length || 0) > 3000 ? '\n\n...' : ''}</Text>
+            <Text className="result-text">{renderPreviewText(result)}</Text>
           </View>
           <View className="result-stats">
             <Text className="result-stats__text">
-              共 {result.text?.length.toLocaleString()} 字符 · {result.text?.split('\n').filter(l => l.trim()).length || 0} 段
+              共 {result.stats?.chars?.toLocaleString() || result.text?.length?.toLocaleString() || 0} 字符 · {result.stats?.paragraphs || result.text?.split('\n').filter(l => l.trim()).length || 0} 段
             </Text>
           </View>
           <View className="result-actions">
@@ -216,34 +216,14 @@ function extractTitle(text: string): string {
   return lines[0]?.slice(0, 50) || '文档'
 }
 
-function generateHTML(result: { title?: string; text?: string }, format: string): string {
+function generateHTML(result: { title?: string; text?: string; sections?: any[]; format?: string }, format: string): string {
   const title = result.title || '文档'
   const isGongwen = format === 'gongwen'
 
-  const body = (result.text || '').split('\n').map(line => {
-    const trimmed = line.trim()
-    if (!trimmed) return '<br>'
-
-    // 公文格式下的标题识别（按编号模式）
-    if (isGongwen) {
-      if (/^[一二三四五六七八九十]+、/.test(trimmed) && trimmed.length < 80)
-        return `<h2 style="font-family:SimHei,黑体,sans-serif;font-size:16pt;font-weight:normal;margin:10px 0;line-height:29.45pt">${trimmed}</h2>`
-      if (/^（[一二三四五六七八九十\d]+）/.test(trimmed) && trimmed.length < 80)
-        return `<h3 style="font-family:KaiTi,楷体,STKaiti,serif;font-size:16pt;font-weight:bold;margin:8px 0;line-height:29.45pt">${trimmed}</h3>`
-      if (/^\d+\./.test(trimmed) && trimmed.length < 80 && !/^\d+\.\d+/.test(trimmed))
-        return `<h4 style="font-family:FangSong,仿宋,STFangsong,serif;font-size:16pt;font-weight:bold;margin:6px 0;line-height:29.45pt">${trimmed}</h4>`
-    }
-
-    // 普通格式下的标题识别
-    if (/^[一二三四五六七八九十]/.test(trimmed) && trimmed.length < 30) return `<h2>${trimmed}</h2>`
-    if (trimmed.endsWith('：') && trimmed.length < 30) return `<h3>${trimmed}</h3>`
-
-    // 正文段落
-    if (isGongwen) {
-      return `<p style="font-family:FangSong,仿宋,STFangsong,serif;font-size:16pt;text-indent:2em;margin:0;line-height:29.45pt">${trimmed}</p>`
-    }
-    return `<p style="text-indent:2em;margin:6px 0;line-height:1.8">${trimmed}</p>`
-  }).join('\n')
+  // 优先使用 AI 的结构化 sections；没有则 fallback 到纯文本按行解析
+  const body = result.sections && result.sections.length > 0
+    ? renderSections(result.sections, isGongwen)
+    : renderTextAsHTML(result.text || '', isGongwen)
 
   // 公文格式的标题样式
   const titleStyle = isGongwen
@@ -258,4 +238,104 @@ function generateHTML(result: { title?: string; text?: string }, format: string)
   xmlns="http://www.w3.org/TR/REC-html40">
   <head><meta charset="utf-8"><title>${title}</title></head>
   <body${bodyStyle ? ' ' + bodyStyle : ''}><h1 style="text-align:center;${titleStyle}">${title}</h1>${body}</body></html>`
+}
+
+// 用 AI 返回的 sections 数组渲染 HTML
+function renderSections(sections: any[], isGongwen: boolean): string {
+  if (isGongwen) return renderGongwenSections(sections)
+  return renderNormalSections(sections)
+}
+
+function renderGongwenSections(sections: any[]): string {
+  return sections.map(s => {
+    switch (s.type) {
+      case 'heading': {
+        const lv = s.level || 2
+        if (lv === 1) return '' // H1 是文档标题，已单独渲染
+        if (lv === 2)
+          return `<h2 style="font-family:SimHei,黑体,sans-serif;font-size:16pt;font-weight:normal;margin:10px 0 4px 0;line-height:29.45pt">${esc(s.text)}</h2>`
+        if (lv === 3)
+          return `<h3 style="font-family:KaiTi,楷体,STKaiti,serif;font-size:16pt;font-weight:bold;margin:8px 0 2px 0;line-height:29.45pt">${esc(s.text)}</h3>`
+        if (lv === 4)
+          return `<h4 style="font-family:FangSong,仿宋,STFangsong,serif;font-size:16pt;font-weight:bold;margin:6px 0 2px 0;line-height:29.45pt">${esc(s.text)}</h4>`
+        return `<h5 style="font-family:FangSong,仿宋,STFangsong,serif;font-size:16pt;margin:4px 0 2px 0;line-height:29.45pt">${esc(s.text)}</h5>`
+      }
+      case 'paragraph':
+        return `<p style="font-family:FangSong,仿宋,STFangsong,serif;font-size:16pt;text-indent:2em;margin:0;line-height:29.45pt">${esc(s.text)}</p>`
+      case 'list': {
+        const items = (s.items || []).map((item: string) => `<li style="font-family:FangSong,仿宋,STFangsong,serif;font-size:16pt;line-height:29.45pt">${esc(item)}</li>`).join('')
+        const tag = s.ordered ? 'ol' : 'ul'
+        return `<${tag} style="margin:4px 0 4px 1.5em;padding:0">${items}</${tag}>`
+      }
+      case 'quote':
+        return `<blockquote style="font-family:FangSong,仿宋,STFangsong,serif;font-size:16pt;border-left:3px solid #ccc;margin:8px 0;padding:4px 12px;line-height:29.45pt">${esc(s.text)}${s.source ? `<footer>— ${esc(s.source)}</footer>` : ''}</blockquote>`
+      default:
+        return `<p style="font-family:FangSong,仿宋,STFangsong,serif;font-size:16pt;text-indent:2em;margin:0;line-height:29.45pt">${esc(s.text || '')}</p>`
+    }
+  }).join('\n')
+}
+
+function renderNormalSections(sections: any[]): string {
+  return sections.map(s => {
+    switch (s.type) {
+      case 'heading': {
+        const lv = s.level || 2
+        if (lv === 1) return '' // H1 文档标题已单独渲染
+        const sizes: Record<number,string> = { 2: '1.3em', 3: '1.15em', 4: '1.05em' }
+        return `<h${lv} style="font-weight:bold;margin:14px 0 6px 0;font-size:${sizes[lv] || '1em'}">${esc(s.text)}</h${lv}>`
+      }
+      case 'paragraph':
+        return `<p style="text-indent:2em;margin:6px 0;line-height:1.8">${esc(s.text)}</p>`
+      case 'list': {
+        const items = (s.items || []).map((item: string) => `<li>${esc(item)}</li>`).join('')
+        const tag = s.ordered ? 'ol' : 'ul'
+        return `<${tag} style="margin:6px 0 6px 1.5em;padding:0;line-height:1.8">${items}</${tag}>`
+      }
+      case 'quote':
+        return `<blockquote style="border-left:3px solid #ccc;margin:8px 0;padding:4px 12px;line-height:1.8">${esc(s.text)}${s.source ? `<footer>— ${esc(s.source)}</footer>` : ''}</blockquote>`
+      default:
+        return `<p style="text-indent:2em;margin:6px 0;line-height:1.8">${esc(s.text || '')}</p>`
+    }
+  }).join('\n')
+}
+
+// fallback: 纯文本按行解析（当 sections 不可用时）
+function renderTextAsHTML(text: string, isGongwen: boolean): string {
+  return text.split('\n').map(line => {
+    const trimmed = line.trim()
+    if (!trimmed) return '' // 空行跳过，不用 <br>
+    if (isGongwen) {
+      if (/^[一二三四五六七八九十]+、/.test(trimmed) && trimmed.length < 80)
+        return `<h2 style="font-family:SimHei,黑体,sans-serif;font-size:16pt;font-weight:normal;margin:10px 0 4px 0;line-height:29.45pt">${esc(trimmed)}</h2>`
+      if (/^（[一二三四五六七八九十\d]+）/.test(trimmed) && trimmed.length < 80)
+        return `<h3 style="font-family:KaiTi,楷体,STKaiti,serif;font-size:16pt;font-weight:bold;margin:8px 0 2px 0;line-height:29.45pt">${esc(trimmed)}</h3>`
+      if (/^\d+\./.test(trimmed) && trimmed.length < 80 && !/^\d+\.\d+/.test(trimmed))
+        return `<h4 style="font-family:FangSong,仿宋,STFangsong,serif;font-size:16pt;font-weight:bold;margin:6px 0 2px 0;line-height:29.45pt">${esc(trimmed)}</h4>`
+      if (/^（\d+）/.test(trimmed) && trimmed.length < 80)
+        return `<h5 style="font-family:FangSong,仿宋,STFangsong,serif;font-size:16pt;margin:4px 0 2px 0;line-height:29.45pt">${esc(trimmed)}</h5>`
+      return `<p style="font-family:FangSong,仿宋,STFangsong,serif;font-size:16pt;text-indent:2em;margin:0;line-height:29.45pt">${esc(trimmed)}</p>`
+    }
+    if (/^[一二三四五六七八九十]/.test(trimmed) && trimmed.length < 30) return `<h2>${esc(trimmed)}</h2>`
+    if (trimmed.endsWith('：') && trimmed.length < 30) return `<h3>${esc(trimmed)}</h3>`
+    return `<p style="text-indent:2em;margin:6px 0;line-height:1.8">${esc(trimmed)}</p>`
+  }).filter(Boolean).join('\n')
+}
+
+function esc(s: string): string {
+  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+}
+
+// 预览：用 text 字段（纯文本），截断 3000 字符
+function renderPreviewText(result: { text?: string; sections?: any[] }): string {
+  const source = result.text || sectionsToText(result.sections) || ''
+  return source.length > 3000 ? source.slice(0, 3000) + '\n\n...' : source
+}
+
+// sections 数组转为纯文本预览
+function sectionsToText(sections?: any[]): string {
+  if (!sections || sections.length === 0) return ''
+  return sections.map(s => {
+    if (s.type === 'list') return (s.items || []).map((item: string) => `- ${item}`).join('\n')
+    return s.text || ''
+  }).join('\n\n')
 }
