@@ -220,10 +220,15 @@ function generateHTML(result: { title?: string; text?: string; sections?: any[];
   const title = result.title || '文档'
   const isGongwen = format === 'gongwen'
 
-  // 优先使用 AI 的结构化 sections；没有则 fallback 到纯文本按行解析
-  const body = result.sections && result.sections.length > 0
-    ? renderSections(result.sections, isGongwen)
-    : renderTextAsHTML(result.text || '', isGongwen)
+  // 构建 body HTML
+  let body: string
+  if (result.sections && result.sections.length > 0) {
+    body = renderSections(result.sections, isGongwen)
+  } else {
+    // fallback: 纯文本按行解析，先去掉可能重复的标题行
+    const safeText = stripTitleFromText(result.text || '', title)
+    body = renderTextAsHTML(safeText, isGongwen)
+  }
 
   // 公文格式的标题样式
   const titleStyle = isGongwen
@@ -240,10 +245,49 @@ function generateHTML(result: { title?: string; text?: string; sections?: any[];
   <body${bodyStyle ? ' ' + bodyStyle : ''}><h1 style="text-align:center;${titleStyle}">${title}</h1>${body}</body></html>`
 }
 
+// fallback 路径：纯文本开头如果与标题相同，删除
+function stripTitleFromText(text: string, title: string): string {
+  if (!title || !text) return text
+  const lines = text.split('\n')
+  // 检查第一非空行是否等于标题
+  const firstIdx = lines.findIndex(l => l.trim())
+  if (firstIdx >= 0 && lines[firstIdx].trim() === title.trim()) {
+    lines.splice(firstIdx, 1)
+  }
+  return lines.join('\n')
+}
+
 // 用 AI 返回的 sections 数组渲染 HTML
 function renderSections(sections: any[], isGongwen: boolean): string {
-  if (isGongwen) return renderGongwenSections(sections)
-  return renderNormalSections(sections)
+  // 防御性去重：如果第一段正文以文档标题开头，裁剪掉标题
+  const safe = dedupTitleFromFirstParagraph(sections)
+  if (isGongwen) return renderGongwenSections(safe)
+  return renderNormalSections(safe)
+}
+
+// 删除第一段正文中与 H1 标题完全重复的开头文本
+function dedupTitleFromFirstParagraph(sections: any[]): any[] {
+  const title = sections.find(s => s.type === 'heading' && s.level === 1)
+  if (!title) return sections
+  const titleText = title.text || ''
+  return sections.map((s, i) => {
+    // 找第一个 paragraph
+    if (s.type !== 'paragraph') return s
+    const isFirst = !sections.slice(0, i).some(prev => prev.type === 'paragraph')
+    if (!isFirst) return s
+    const t = s.text || ''
+    if (t.trim() === titleText.trim()) {
+      // 整段就是标题——跳过这段
+      return null
+    }
+    if (t.startsWith(titleText + '\n')) {
+      return { ...s, text: t.slice(titleText.length + 1) }
+    }
+    if (t.startsWith(titleText)) {
+      return { ...s, text: t.slice(titleText.length).replace(/^\n+/, '') }
+    }
+    return s
+  }).filter(Boolean)
 }
 
 function renderGongwenSections(sections: any[]): string {
