@@ -137,7 +137,9 @@ serve(async (req: Request) => {
         body: JSON.stringify({ text, format: format || 'normal' })
       })
       const vpsData = await vpsRes.json()
-      return new Response(JSON.stringify(vpsData), { headers: { 'Content-Type': 'application/json' } })
+      // VPS returns {success, output: {...}} — unwrap to flat JSON for frontend
+      const result = vpsData?.output || vpsData
+      return new Response(JSON.stringify(result), { headers: { 'Content-Type': 'application/json' } })
     }
 
     // 开发阶段：直接调 Claude API（VPS 不可用时的 fallback）
