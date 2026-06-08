@@ -308,7 +308,12 @@ function renderGongwenSections(sections: any[]): string {
         return `<h5 style="font-family:FangSong,仿宋,STFangsong,serif;font-size:16pt;margin:4px 0 2px 0;line-height:29.45pt">${esc(s.text)}</h5>`
       }
       case 'paragraph':
-        return `<p style="font-family:FangSong,仿宋,STFangsong,serif;font-size:16pt;text-indent:2em;margin:0;line-height:29.45pt">${esc(s.text)}</p>`
+        // 公文落款：签名/日期行右对齐，首行不缩进
+        {
+          const isSign = /^(?:签名|姓\s*名|日\s*期|年\s+月\s+日)/.test(s.text) || /^\d{4}\s*年\s*\d{1,2}\s*月\s*\d{1,2}\s*日/.test(s.text)
+          const indent = isSign ? 'text-indent:0;text-align:right' : 'text-indent:2em'
+          return `<p style="font-family:FangSong,仿宋,STFangsong,serif;font-size:16pt;${indent};margin:0;line-height:29.45pt">${esc(s.text)}</p>`
+        }
       case 'list': {
         const items = (s.items || []).map((item: string) => `<li style="font-family:FangSong,仿宋,STFangsong,serif;font-size:16pt;line-height:29.45pt">${esc(item)}</li>`).join('')
         const tag = s.ordered ? 'ol' : 'ul'
@@ -362,6 +367,10 @@ function renderTextAsHTML(text: string, isGongwen: boolean): string {
         return `<h5 style="font-family:FangSong,仿宋,STFangsong,serif;font-size:16pt;margin:4px 0 2px 0;line-height:29.45pt">${esc(trimmed)}</h5>`
       return `<p style="font-family:FangSong,仿宋,STFangsong,serif;font-size:16pt;text-indent:2em;margin:0;line-height:29.45pt">${esc(trimmed)}</p>`
     }
+    // 落款：签名/日期行右对齐
+    const isSign = /^(?:签名|姓\s*名|日\s*期|年\s+月\s+日)/.test(trimmed) || /^\d{4}\s*年\s*\d{1,2}\s*月\s*\d{1,2}\s*日/.test(trimmed)
+    if (isGongwen && isSign)
+      return `<p style="font-family:FangSong,仿宋,STFangsong,serif;font-size:16pt;text-align:right;margin:0;line-height:29.45pt">${esc(trimmed)}</p>`
     if (/^[一二三四五六七八九十]/.test(trimmed) && trimmed.length < 30) return `<h2>${esc(trimmed)}</h2>`
     if (trimmed.endsWith('：') && trimmed.length < 30) return `<h3>${esc(trimmed)}</h3>`
     return `<p style="text-indent:2em;margin:6px 0;line-height:1.8">${esc(trimmed)}</p>`
