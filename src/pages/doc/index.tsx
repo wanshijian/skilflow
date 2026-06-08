@@ -230,7 +230,10 @@ function generateHTML(result: { title?: string; text?: string; sections?: any[];
     body = renderTextAsHTML(safeText, isGongwen)
   }
 
-  // 公文格式的标题样式
+  // 公文格式：加 @page CSS 设置页边距 (GB/T 9704-2012)
+  const pageStyle = isGongwen
+    ? '<style>@page { size: A4; margin: 3.7cm 2.6cm 3.5cm 2.8cm; }</style>'
+    : ''
   const titleStyle = isGongwen
     ? 'font-family:FZXiaoBiaoSong-B05S,宋体,SimSun,serif;font-size:22pt;font-weight:normal;line-height:35.45pt'
     : 'font-size:18pt;font-weight:bold'
@@ -241,7 +244,7 @@ function generateHTML(result: { title?: string; text?: string; sections?: any[];
   return `<html xmlns:o="urn:schemas-microsoft-com:office:office"
   xmlns:w="urn:schemas-microsoft-com:office:word"
   xmlns="http://www.w3.org/TR/REC-html40">
-  <head><meta charset="utf-8"><title>${title}</title></head>
+  <head><meta charset="utf-8"><title>${title}</title>${pageStyle}</head>
   <body${bodyStyle ? ' ' + bodyStyle : ''}><h1 style="text-align:center;${titleStyle}">${title}</h1>${body}</body></html>`
 }
 
